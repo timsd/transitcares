@@ -129,5 +129,16 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  /* Ensure good text contrast and visibility */
+  .text-muted-foreground {
+    @apply text-foreground/70;
+  }
+  
+  /* Improve readability on all backgrounds */
+  .card {
+    @apply backdrop-blur-sm;
   }
 }
