@@ -17,12 +17,12 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative container mx-auto px-4 py-20">
         <div className="max-w-3xl">
-          <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
             Stress-Free Vehicle Insurance for 
             <span className="text-transport-yellow"> Transport Business</span>
           </h1>
           
-          <p className="text-xl text-primary-foreground/90 mb-8 leading-relaxed">
+          <p className="text-lg sm:text-xl text-primary-foreground/90 mb-8 leading-relaxed">
             Daily premium insurance made easy for tricycles, minibuses, and buses. 
             Protect your transport business with affordable, flexible coverage.
           </p>

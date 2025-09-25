@@ -5,6 +5,7 @@ import InsurancePlans from "@/components/InsurancePlans";
 import ClaimsCenter from "@/components/ClaimsCenter";
 import AdminSnapshot from "@/components/AdminSnapshot";
 import SupportSection from "@/components/SupportSection";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
         <AdminSnapshot />
         <SupportSection />
       </main>
+      <Footer />
     </div>
   );
 };

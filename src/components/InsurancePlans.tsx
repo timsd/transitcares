@@ -4,19 +4,18 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, Crown } from "lucide-react";
 
 const InsurancePlans = () => {
-  const plans = [
+const plans = [
     {
       name: "Bronze",
       icon: Zap,
-      dailyPremium: 500,
-      coverageRange: "₦50,000 - ₦150,000",
-      description: "Essential coverage for tricycles and small transport",
+      dailyPremium: 1500,
+      coverageRange: "₦2,000 - ₦20,000",
+      description: "Essential, daily repair cover",
       features: [
-        "Basic accident coverage",
-        "Third-party liability",
-        "24/7 emergency support",
-        "Mobile app access",
-        "Quick claim processing"
+        "Covers minor mechanical failures",
+        "Tire and battery issues",
+        "Fluid leaks and servicing",
+        "Limited to 2 claims per month"
       ],
       popular: false,
       variant: "bronze" as const
@@ -24,16 +23,15 @@ const InsurancePlans = () => {
     {
       name: "Silver", 
       icon: Star,
-      dailyPremium: 800,
-      coverageRange: "₦100,000 - ₦300,000",
-      description: "Comprehensive protection for minibuses and medium vehicles",
+      dailyPremium: 2500,
+      coverageRange: "₦21,000 - ₦39,000",
+      description: "Broader coverage for frequent road users",
       features: [
-        "Extended accident coverage",
-        "Fire and theft protection",
-        "Personal accident benefit",
-        "Roadside assistance",
-        "Fast track claims",
-        "Driver training discount"
+        "All Bronze plan benefits",
+        "Brake system and exhaust repairs",
+        "Suspension issues and minor bodywork",
+        "Diagnostic services",
+        "Limited to 2 claims per month"
       ],
       popular: true,
       variant: "silver" as const
@@ -41,17 +39,15 @@ const InsurancePlans = () => {
     {
       name: "Gold",
       icon: Crown,
-      dailyPremium: 1200,
-      coverageRange: "₦200,000 - ₦500,000",
-      description: "Premium coverage for buses and large commercial vehicles",
+      dailyPremium: 4000,
+      coverageRange: "₦40,000 - ₦60,000",
+      description: "Maximum protection for all major repairs",
       features: [
-        "Maximum accident coverage",
-        "Comprehensive protection",
-        "Business interruption cover",
-        "Legal assistance",
-        "Priority customer service",
-        "Vehicle replacement service",
-        "Driver health insurance"
+        "All Silver plan benefits",
+        "Major engine components",
+        "Transmission and electrical faults",
+        "Towing assistance (up to ₦10,000)",
+        "Limited to 2 claims per month"
       ],
       popular: false,
       variant: "gold" as const
@@ -63,11 +59,10 @@ const InsurancePlans = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Choose Your Protection Plan
+            Secure Your Ride
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Flexible daily premiums designed specifically for transport businesses. 
-            Pick the coverage that fits your vehicle and budget.
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Select the daily insurance plan that best fits your needs.
           </p>
         </div>
 
