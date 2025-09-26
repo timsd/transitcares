@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Clock, TrendingUp } from "lucide-react";
-import heroImage from "@/assets/hero-transport.jpg";
+import heroImage from "@/assets/hero-transport-street.png";
 
 const HeroSection = () => {
   return (

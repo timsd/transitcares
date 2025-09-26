@@ -1,7 +1,20 @@
 import { Button } from "@/components/ui/button";
-import { Truck, Menu, User } from "lucide-react";
+import { Truck, Menu, User, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAuthAction = () => {
+    if (user) {
+      signOut();
+    } else {
+      navigate("/auth");
+    }
+  };
+
   return (
     <header className="bg-background border-b border-border shadow-[var(--shadow-soft)] sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
@@ -38,12 +51,21 @@ const Header = () => {
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
             </Button>
-            <Button variant="outline" size="sm" className="hidden md:flex">
-              <User className="h-4 w-4" />
-              Profile
-            </Button>
-            <Button variant="transport" size="sm">
-              Login
+            {user && (
+              <Button variant="outline" size="sm" className="hidden md:flex">
+                <User className="h-4 w-4" />
+                Profile
+              </Button>
+            )}
+            <Button variant="transport" size="sm" onClick={handleAuthAction}>
+              {user ? (
+                <>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </>
+              ) : (
+                "Login"
+              )}
             </Button>
           </div>
         </div>

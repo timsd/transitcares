@@ -141,4 +141,18 @@ All colors MUST be HSL.
   .card {
     @apply backdrop-blur-sm;
   }
+
+  /* Ensure all text is visible on white backgrounds */
+  .text-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* Dark text for light backgrounds */
+  .bg-background .text-primary-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
 }
