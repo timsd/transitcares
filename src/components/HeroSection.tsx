@@ -1,17 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Clock, TrendingUp } from "lucide-react";
 import heroImage from "@/assets/hero-transport-street.png";
-
 const HeroSection = () => {
-  return (
-    <section className="relative min-h-[600px] bg-[var(--gradient-hero)] overflow-hidden">
+  return <section className="relative min-h-[600px] bg-[var(--gradient-hero)] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 opacity-20">
-        <img 
-          src={heroImage} 
-          alt="Transport vehicles" 
-          className="w-full h-full object-cover"
-        />
+        <img src={heroImage} alt="Transport vehicles" className="w-full h-full object-cover" />
       </div>
       
       {/* Content */}
@@ -22,7 +16,7 @@ const HeroSection = () => {
             <span className="text-transport-yellow"> Transport Business</span>
           </h1>
           
-          <p className="text-lg sm:text-xl text-primary-foreground/90 mb-8 leading-relaxed">
+          <p className="text-lg sm:text-xl mb-8 leading-relaxed text-zinc-800">
             Daily premium insurance made easy for tricycles, minibuses, and buses. 
             Protect your transport business with affordable, flexible coverage.
           </p>
@@ -59,8 +53,6 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;

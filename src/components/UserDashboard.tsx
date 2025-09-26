@@ -5,14 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, Wallet, CheckCircle, FileText, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-
 const UserDashboard = () => {
-  const { user, profile } = useAuth();
+  const {
+    user,
+    profile
+  } = useAuth();
   const navigate = useNavigate();
-
   if (!user) {
-    return (
-      <section className="py-16 bg-background border-b">
+    return <section className="py-16 bg-background border-b">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
             Get Started with AjoSafeRide
@@ -21,20 +21,11 @@ const UserDashboard = () => {
             Join thousands of transport operators who trust us with their daily insurance needs. 
             Sign up today and protect your vehicle with our flexible, affordable plans.
           </p>
-          <Button 
-            size="lg" 
-            onClick={() => navigate("/auth")}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            Create Account
-          </Button>
+          <Button size="lg" onClick={() => navigate("/auth")} className="bg-sky-500 hover:bg-sky-400 text-base font-semibold text-slate-50">Get covered in less than 5 minutes</Button>
         </div>
-      </section>
-    );
+      </section>;
   }
-
-  return (
-    <section id="dashboard" className="py-16 bg-secondary/30">
+  return <section id="dashboard" className="py-16 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -147,10 +138,7 @@ const UserDashboard = () => {
                       {profile?.registration_status === 'completed' ? 'One-time Registration Complete' : 'Registration In Progress'}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {profile?.registration_status === 'completed' 
-                        ? 'All required documents verified and approved'
-                        : 'Please complete your vehicle registration to access all features'
-                      }
+                      {profile?.registration_status === 'completed' ? 'All required documents verified and approved' : 'Please complete your vehicle registration to access all features'}
                     </p>
                   </div>
                 </div>
@@ -163,8 +151,6 @@ const UserDashboard = () => {
           </Card>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default UserDashboard;
