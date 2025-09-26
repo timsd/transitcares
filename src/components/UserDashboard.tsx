@@ -21,7 +21,7 @@ const UserDashboard = () => {
             Join thousands of transport operators who trust us with their daily insurance needs. 
             Sign up today and protect your vehicle with our flexible, affordable plans.
           </p>
-          <Button size="lg" onClick={() => navigate("/auth")} className="bg-sky-500 hover:bg-sky-400 text-base font-semibold text-slate-50">Get covered in less than 5 minutes</Button>
+          <Button size="lg" onClick={() => navigate("/auth")} className="bg-sky-500 hover:bg-sky-400 text-base font-semibold text-slate-50">Get covered in 5 minutes or less</Button>
         </div>
       </section>;
   }
