@@ -42,9 +42,9 @@ const Profile = () => {
         phone: profile.phone || '',
         vehicle_type: profile.vehicle_type || '',
         vehicle_id: profile.vehicle_id || '',
-        vehicle_color: profile.vehicle_color || '',
-        chassis_number: profile.chassis_number || '',
-        designated_route: profile.designated_route || '',
+        vehicle_color: (profile as any).vehicle_color || '',
+        chassis_number: (profile as any).chassis_number || '',
+        designated_route: (profile as any).designated_route || '',
         plan_tier: profile.plan_tier || 'bronze'
       });
     }

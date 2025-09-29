@@ -79,7 +79,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          chassis_number: string | null
           created_at: string
+          designated_route: string | null
           full_name: string | null
           id: string
           phone: string | null
@@ -87,12 +89,15 @@ export type Database = {
           registration_status: string | null
           updated_at: string
           user_id: string
+          vehicle_color: string | null
           vehicle_id: string | null
           vehicle_type: string | null
           wallet_balance: number | null
         }
         Insert: {
+          chassis_number?: string | null
           created_at?: string
+          designated_route?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -100,12 +105,15 @@ export type Database = {
           registration_status?: string | null
           updated_at?: string
           user_id: string
+          vehicle_color?: string | null
           vehicle_id?: string | null
           vehicle_type?: string | null
           wallet_balance?: number | null
         }
         Update: {
+          chassis_number?: string | null
           created_at?: string
+          designated_route?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -113,6 +121,7 @@ export type Database = {
           registration_status?: string | null
           updated_at?: string
           user_id?: string
+          vehicle_color?: string | null
           vehicle_id?: string | null
           vehicle_type?: string | null
           wallet_balance?: number | null
