@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Truck, Menu, User, LogOut } from "lucide-react";
+import { Truck, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import MobileMenu from "./MobileMenu";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -25,8 +26,8 @@ const Header = () => {
               <Truck className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-xl text-foreground">AjoSafeRide</h1>
-              <p className="text-xs text-muted-foreground">Vehicle Insurance</p>
+              <h1 className="font-bold text-xl text-foreground">RepairRide</h1>
+              <p className="text-xs text-muted-foreground">Vehicle Repairs Insurance</p>
             </div>
           </div>
 
@@ -48,16 +49,19 @@ const Header = () => {
 
           {/* User Actions */}
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            <MobileMenu />
             {user && (
-              <Button variant="outline" size="sm" className="hidden md:flex">
-                <User className="h-4 w-4" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden md:flex"
+                onClick={() => navigate("/profile")}
+              >
+                <User className="h-4 w-4 mr-2" />
                 Profile
               </Button>
             )}
-            <Button variant="transport" size="sm" onClick={handleAuthAction}>
+            <Button variant="transport" size="sm" onClick={handleAuthAction} className="hidden md:flex">
               {user ? (
                 <>
                   <LogOut className="h-4 w-4 mr-2" />

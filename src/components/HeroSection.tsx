@@ -11,14 +11,14 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative container mx-auto px-4 py-20 bg-[#0a0100]/0">
         <div className="max-w-3xl">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight">
-            Stress-Free Vehicle Insurance for 
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
+            Stress-Free Vehicle Repairs for 
             <span className="text-transport-yellow"> Transport Business</span>
           </h1>
           
-          <p className="text-lg sm:text-xl mb-8 leading-relaxed text-zinc-800">
-            Daily premium insurance made easy for tricycles, minibuses, and buses. 
-            Protect your transport business with affordable, flexible coverage.
+          <p className="text-lg sm:text-xl mb-8 leading-relaxed text-foreground/90">
+            Daily premium repairs insurance made easy for tricycles, minibuses, and buses. 
+            Protect your transport business with affordable, flexible vehicle repair coverage.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
