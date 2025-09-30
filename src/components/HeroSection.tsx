@@ -4,12 +4,12 @@ import heroImage from "@/assets/hero-transport-street.png";
 const HeroSection = () => {
   return <section className="relative min-h-[600px] bg-[var(--gradient-hero)] overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0 opacity-50">
+      <div className="absolute inset-0 opacity-70">
         <img src={heroImage} alt="Transport vehicles" className="w-full h-full object-cover" />
       </div>
       
       {/* Content with dark overlay for better text visibility */}
-      <div className="absolute inset-0 bg-background/60"></div>
+      <div className="absolute inset-0 bg-background/40"></div>
       
       <div className="relative container mx-auto px-4 py-20 z-10">
         <div className="max-w-3xl">
