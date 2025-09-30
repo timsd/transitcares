@@ -17,26 +17,26 @@ const ClaimsCenter = () => {
     {
       id: "CLM-2024-0045",
       date: "2024-03-15",
-      type: "Accident Damage",
-      amount: 85000,
+      type: "Engine Repair",
+      amount: 45000,
       status: "paid",
-      description: "Front bumper damage from collision"
+      description: "Engine overhaul - Gold Plan (up to ₦50k)"
     },
     {
       id: "CLM-2024-0038",
       date: "2024-03-10", 
-      type: "Theft",
-      amount: 120000,
+      type: "Brake System",
+      amount: 15000,
       status: "processing",
-      description: "Side mirror and headlight theft"
+      description: "Brake pad replacement - Bronze Plan (up to ₦20k)"
     },
     {
       id: "CLM-2024-0031",
       date: "2024-03-05",
-      type: "Fire Damage",
-      amount: 75000,
+      type: "Transmission",
+      amount: 28000,
       status: "pending",
-      description: "Engine compartment fire damage"
+      description: "Gearbox maintenance - Silver Plan (up to ₦35k)"
     }
   ];
 

@@ -14,7 +14,7 @@ const HeroSection = () => {
       <div className="relative container mx-auto px-4 py-20 z-10">
         <div className="max-w-3xl">
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-foreground mb-6 leading-tight drop-shadow-sm">
-            Stress-Free Vehicle Repairs for 
+            Flexible Vehicle Repairs Insurance for 
             <span className="text-transport-orange"> Transport Business</span>
           </h1>
           

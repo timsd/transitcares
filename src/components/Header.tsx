@@ -26,7 +26,7 @@ const Header = () => {
               <Truck className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-xl text-foreground">RepairRide</h1>
+              <h1 className="font-bold text-xl text-foreground">TransitCare</h1>
               <p className="text-xs text-muted-foreground">Vehicle Repairs Insurance</p>
             </div>
           </div>
@@ -41,6 +41,9 @@ const Header = () => {
             </a>
             <a href="#claims" className="text-foreground hover:text-primary transition-colors">
               Claims
+            </a>
+            <a href="/mechanics" className="text-foreground hover:text-primary transition-colors">
+              Mechanics
             </a>
             <a href="#support" className="text-foreground hover:text-primary transition-colors">
               Support

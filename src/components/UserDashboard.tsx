@@ -1,10 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Wallet, CheckCircle, FileText, TrendingUp } from "lucide-react";
+import { CreditCard, Wallet, FileText, CheckCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import WeeklyCompliance from "@/components/WeeklyCompliance";
+import WalletHistory from "@/components/WalletHistory";
 const UserDashboard = () => {
   const {
     user,
@@ -15,11 +16,11 @@ const UserDashboard = () => {
     return <section className="py-16 bg-background border-b">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold text-foreground mb-4">
-            Get Started with AjoSafeRide
+            Get Started with TransitCare
           </h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of transport operators who trust us with their daily insurance needs. 
-            Sign up today and protect your vehicle with our flexible, affordable plans.
+            Join thousands of transport operators who trust us with their daily repairs insurance needs. 
+            Sign up today and protect your vehicle with our flexible, affordable repair coverage plans.
           </p>
           <Button size="lg" onClick={() => navigate("/auth")} className="bg-sky-500 hover:bg-sky-400 text-base font-semibold text-slate-50">Get covered in 5 minutes or less</Button>
         </div>
@@ -63,36 +64,12 @@ const UserDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Weekly Progress Card */}
-          <Card className="shadow-[var(--shadow-soft)]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Weekly Progress
-              </CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Track your premium payments and claim eligibility
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Premium Payments</span>
-                  <span className="font-medium text-foreground">2/3 this week</span>
-                </div>
-                <Progress value={67} className="h-2" />
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle className="h-4 w-4 text-transport-green" />
-                <span className="text-transport-green font-medium">Eligible for Claims</span>
-              </div>
-              <Button variant="transport" className="w-full">
-                Pay Today's Premium
-              </Button>
-            </CardContent>
+          {/* Weekly Compliance Card */}
+          <Card className="md:col-span-2 shadow-[var(--shadow-soft)]">
+            <WeeklyCompliance />
           </Card>
 
-          {/* Wallet Balance Card */}
+          {/* Wallet Card with Quick Actions */}
           <Card className="shadow-[var(--shadow-soft)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
@@ -113,10 +90,12 @@ const UserDashboard = () => {
                   Withdraw
                 </Button>
               </div>
-              <Button variant="ghost" size="sm" className="w-full text-foreground">
-                View History
-              </Button>
             </CardContent>
+          </Card>
+          
+          {/* Wallet History */}
+          <Card className="md:col-span-2 lg:col-span-3 shadow-[var(--shadow-soft)]">
+            <WalletHistory />
           </Card>
 
           {/* Registration Status Card */}

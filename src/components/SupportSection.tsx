@@ -9,24 +9,45 @@ const SupportSection = () => {
   return (
     <section id="support" className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            We translate insurance terms into everyday words so you don't spend your little profit on repairs
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            We speak your language - clear, simple communication about your vehicle repair coverage.
-          </p>
+        <div className="grid md:grid-cols-2 gap-8 items-center mb-12">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              We translate insurance terms into everyday words so you don't spend your little profit on repairs
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              We speak your language - clear, simple communication about your vehicle repair coverage.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={tricycleImage} 
+                alt="Tricycle" 
+                className="w-full h-32 object-cover"
+              />
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={minibusImage} 
+                alt="Minibus" 
+                className="w-full h-32 object-cover"
+              />
+            </div>
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={busImage} 
+                alt="Bus" 
+                className="w-full h-32 object-cover"
+              />
+            </div>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           <Card className="bg-card border-border text-foreground">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-20 h-20 rounded-full overflow-hidden">
-                <img 
-                  src={tricycleImage} 
-                  alt="Tricycle insurance" 
-                  className="w-full h-full object-cover"
-                />
+              <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                <Phone className="h-10 w-10 text-primary" />
               </div>
               <CardTitle className="text-foreground">Call Us</CardTitle>
               <p className="text-muted-foreground">
@@ -42,12 +63,8 @@ const SupportSection = () => {
 
           <Card className="bg-card border-border text-foreground">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-20 h-20 rounded-full overflow-hidden">
-                <img 
-                  src={busImage} 
-                  alt="Bus insurance" 
-                  className="w-full h-full object-cover"
-                />
+              <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageCircle className="h-10 w-10 text-primary" />
               </div>
               <CardTitle className="text-foreground">Chat With Us</CardTitle>
               <p className="text-muted-foreground">
@@ -63,12 +80,8 @@ const SupportSection = () => {
 
           <Card className="bg-card border-border text-foreground">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 w-20 h-20 rounded-full overflow-hidden">
-                <img 
-                  src={minibusImage} 
-                  alt="Minibus insurance" 
-                  className="w-full h-full object-cover"
-                />
+              <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                <MessageSquare className="h-10 w-10 text-primary" />
               </div>
               <CardTitle className="text-foreground">Web Chat</CardTitle>
               <p className="text-muted-foreground">

@@ -25,7 +25,7 @@ const Footer = () => {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Shield className="h-6 w-6 text-primary" />
-              <h3 className="text-xl font-bold text-foreground">AjoSafeRide</h3>
+              <h3 className="text-xl font-bold text-foreground">TransitCare</h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Protecting transport businesses across Nigeria with flexible, 
@@ -124,9 +124,17 @@ const Footer = () => {
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p className="text-sm text-muted-foreground text-center md:text-left">
-            © {currentYear} AjoSafeRide. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-start space-y-2">
+            <p className="text-sm text-muted-foreground text-center md:text-left">
+              © {currentYear} TransitCare. All rights reserved.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Powered by Realinks Global Resources
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Built with 💚 by <a href="https://tech.zavolah.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">ZavTech</a>
+            </p>
+          </div>
           <div className="flex flex-wrap justify-center md:justify-end gap-6 text-sm">
             <a href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
               Privacy Policy
