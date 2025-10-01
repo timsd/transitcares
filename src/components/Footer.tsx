@@ -12,9 +12,12 @@ import {
   Clock,
   Users
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import logoImage from "@/assets/transitcares-logo.jpg";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
 
   return (
     <footer className="bg-card border-t border-border">
@@ -23,9 +26,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Shield className="h-6 w-6 text-primary" />
-              <h3 className="text-xl font-bold text-foreground">TransitCare</h3>
+            <div className="flex items-center gap-3">
+              <img src={logoImage} alt="TransitCares Logo" className="h-10 w-10 object-contain" />
+              <h3 className="font-montserrat font-bold text-xl">
+                <span className="text-brand-transit">Transit</span>
+                <span className="text-brand-cares">Cares</span>
+              </h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Protecting transport businesses across Nigeria with flexible, 
@@ -52,21 +58,21 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="font-semibold text-foreground">Quick Links</h4>
             <nav className="space-y-2">
-              <a href="#plans" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+              <button onClick={() => { navigate('/'); setTimeout(() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="block text-sm text-muted-foreground hover:text-primary transition-colors text-left">
                 Insurance Plans
-              </a>
-              <a href="#claims" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+              </button>
+              <button onClick={() => { navigate('/'); setTimeout(() => document.getElementById('claims')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="block text-sm text-muted-foreground hover:text-primary transition-colors text-left">
                 Claims Center
-              </a>
-              <a href="#dashboard" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+              </button>
+              <button onClick={() => { navigate('/'); setTimeout(() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="block text-sm text-muted-foreground hover:text-primary transition-colors text-left">
                 Dashboard
-              </a>
-              <a href="#support" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+              </button>
+              <button onClick={() => { navigate('/'); setTimeout(() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' }), 100); }} className="block text-sm text-muted-foreground hover:text-primary transition-colors text-left">
                 Support
-              </a>
-              <a href="/about" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
-                About Us
-              </a>
+              </button>
+              <button onClick={() => navigate('/mechanics')} className="block text-sm text-muted-foreground hover:text-primary transition-colors text-left">
+                Approved Mechanics
+              </button>
             </nav>
           </div>
 
@@ -114,7 +120,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <p className="text-sm text-muted-foreground">support@ajosaferide.com</p>
+                <p className="text-sm text-muted-foreground">support@transitcares.com</p>
               </div>
             </div>
           </div>
@@ -125,8 +131,8 @@ const Footer = () => {
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           <div className="flex flex-col items-center md:items-start space-y-2">
-            <p className="text-sm text-muted-foreground text-center md:text-left">
-              © {currentYear} TransitCare. All rights reserved.
+            <p className="text-sm text-muted-foreground text-center md:text-left font-montserrat">
+              © {currentYear} <span className="text-brand-transit">Transit</span><span className="text-brand-cares">Cares</span>. All rights reserved.
             </p>
             <p className="text-xs text-muted-foreground">
               Powered by <a href="https://realinks-global.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Realinks Global Resources</a>

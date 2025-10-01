@@ -104,7 +104,7 @@ const Auth = () => {
             {isLogin ? "Welcome Back" : "Create Account"}
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            {isLogin ? "Sign in to your AjoSafeRide account" : "Join AjoSafeRide today"}
+            {isLogin ? "Sign in to your TransitCares account" : "Join TransitCares today"}
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
