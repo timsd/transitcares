@@ -13,8 +13,15 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'montserrat': ['Montserrat', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
+        brand: {
+          transit: "hsl(var(--brand-transit))",
+          cares: "hsl(var(--brand-cares))",
+        },
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",

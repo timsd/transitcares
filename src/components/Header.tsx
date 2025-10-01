@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Truck, User, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import MobileMenu from "./MobileMenu";
+import logoImage from "@/assets/transitcares-logo.jpg";
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -21,12 +22,13 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-[var(--gradient-hero)] rounded-lg">
-              <Truck className="h-6 w-6 text-primary-foreground" />
-            </div>
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="TransitCares Logo" className="h-12 w-12 object-contain" />
             <div>
-              <h1 className="font-bold text-xl text-foreground">TransitCare</h1>
+              <h1 className="font-montserrat font-bold text-xl">
+                <span className="text-brand-transit">Transit</span>
+                <span className="text-brand-cares">Cares</span>
+              </h1>
               <p className="text-xs text-muted-foreground">Vehicle Repairs Insurance</p>
             </div>
           </div>
