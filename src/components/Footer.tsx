@@ -129,7 +129,7 @@ const Footer = () => {
               © {currentYear} TransitCare. All rights reserved.
             </p>
             <p className="text-xs text-muted-foreground">
-              Powered by Realinks Global Resources
+              Powered by <a href="https://realinks-global.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Realinks Global Resources</a>
             </p>
             <p className="text-xs text-muted-foreground">
               Built with 💚 by <a href="https://tech.zavolah.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">ZavTech</a>

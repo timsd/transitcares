@@ -6,12 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import WeeklyCompliance from "@/components/WeeklyCompliance";
 import WalletHistory from "@/components/WalletHistory";
+import PaystackPayment from "@/components/PaystackPayment";
+import { useState } from "react";
 const UserDashboard = () => {
-  const {
-    user,
-    profile
-  } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const [topUpAmount, setTopUpAmount] = useState(1000);
   if (!user) {
     return <section className="py-16 bg-background border-b">
         <div className="container mx-auto px-4 text-center">
@@ -82,13 +82,30 @@ const UserDashboard = () => {
                 <p className="text-lg font-semibold text-foreground">Available Balance</p>
                 <p className="text-3xl font-bold text-transport-green">₦{profile?.wallet_balance?.toLocaleString() || "0"}</p>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1">
-                  Top Up
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1">
-                  Withdraw
-                </Button>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input 
+                    type="number" 
+                    value={topUpAmount}
+                    onChange={(e) => setTopUpAmount(Number(e.target.value))}
+                    min="100"
+                    step="100"
+                    className="flex-1 px-3 py-2 border border-border rounded-md text-sm"
+                    placeholder="Amount"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <PaystackPayment 
+                    amount={topUpAmount} 
+                    paymentType="topup"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md text-sm transition-colors"
+                  >
+                    Top Up
+                  </PaystackPayment>
+                  <Button variant="outline" size="sm" className="flex-1">
+                    Withdraw
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

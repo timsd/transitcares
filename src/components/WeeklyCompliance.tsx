@@ -1,26 +1,42 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import PaystackPayment from "./PaystackPayment";
 
 const WeeklyCompliance = () => {
+  const { profile } = useAuth();
+  
+  // Get daily premium based on plan tier
+  const getPlanAmount = (tier: string | null | undefined) => {
+    switch(tier?.toLowerCase()) {
+      case 'bronze': return 200;
+      case 'silver': return 350;
+      case 'gold': return 500;
+      default: return 200;
+    }
+  };
+  
+  const dailyPremium = getPlanAmount(profile?.plan_tier);
+  const registrationFee = 5000;
   const weekData = [
-    { day: "Monday", paid: true, amount: 200, date: "Jan 27" },
-    { day: "Tuesday", paid: true, amount: 200, date: "Jan 28" },
-    { day: "Wednesday", paid: true, amount: 200, date: "Jan 29" },
-    { day: "Thursday", paid: false, amount: 200, date: "Jan 30" },
-    { day: "Friday", paid: false, amount: 200, date: "Jan 31" },
-    { day: "Saturday", paid: false, amount: 200, date: "Feb 1" },
-    { day: "Sunday", paid: false, amount: 200, date: "Feb 2" }
+    { day: "Monday", paid: true, amount: dailyPremium, date: "Jan 27" },
+    { day: "Tuesday", paid: true, amount: dailyPremium, date: "Jan 28" },
+    { day: "Wednesday", paid: true, amount: dailyPremium, date: "Jan 29" },
+    { day: "Thursday", paid: false, amount: dailyPremium, date: "Jan 30" },
+    { day: "Friday", paid: false, amount: dailyPremium, date: "Jan 31" },
+    { day: "Saturday", paid: false, amount: dailyPremium, date: "Feb 1" },
+    { day: "Sunday", paid: false, amount: dailyPremium, date: "Feb 2" }
   ];
 
   const paidDays = weekData.filter(d => d.paid).length;
   const remainingDays = 7 - paidDays;
-  const totalWeeklyAmount = 200 * 7;
-  const paidAmount = paidDays * 200;
+  const totalWeeklyAmount = dailyPremium * 7;
+  const paidAmount = paidDays * dailyPremium;
   const progressPercentage = (paidDays / 7) * 100;
-  const daysUntilEligible = Math.max(0, 5 - paidDays);
+  const daysUntilEligible = Math.max(0, 4 - paidDays); // Changed to 4 consecutive days
+  const hasRegistrationFee = profile?.registration_status !== 'completed';
 
   return (
     <Card className="bg-card border-border">
@@ -35,9 +51,16 @@ const WeeklyCompliance = () => {
               Track your daily premium payments
             </p>
           </div>
-          <Badge variant={daysUntilEligible === 0 ? "default" : "outline"}>
-            {daysUntilEligible === 0 ? "Claim Eligible" : `${daysUntilEligible} days to eligibility`}
-          </Badge>
+          <div className="flex flex-col gap-2 items-end">
+            <Badge variant={daysUntilEligible === 0 ? "default" : "outline"}>
+              {daysUntilEligible === 0 ? "Claim Eligible" : `${daysUntilEligible} days to eligibility`}
+            </Badge>
+            {hasRegistrationFee && (
+              <Badge variant="secondary" className="text-xs">
+                Registration: ₦{registrationFee.toLocaleString()}
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -97,34 +120,62 @@ const WeeklyCompliance = () => {
 
         {/* Action Button */}
         <div className="pt-4 border-t border-border">
-          {remainingDays > 0 ? (
+          {hasRegistrationFee && (
+            <div className="mb-3 bg-yellow-50 dark:bg-yellow-950/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-900">
+              <p className="text-sm text-yellow-800 dark:text-yellow-400 font-medium mb-2">
+                ⚠️ One-time Registration Fee Required
+              </p>
+              <p className="text-xs text-muted-foreground mb-3">
+                Complete your registration to activate daily premium payments
+              </p>
+              <PaystackPayment 
+                amount={registrationFee} 
+                paymentType="registration"
+                className="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md transition-colors"
+              >
+                Pay Registration Fee (₦{registrationFee.toLocaleString()})
+              </PaystackPayment>
+            </div>
+          )}
+          
+          {!hasRegistrationFee && remainingDays > 0 ? (
             <div className="space-y-3">
               <div className="bg-muted p-3 rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                  <strong className="text-foreground">Remaining this week:</strong> ₦{(remainingDays * 200).toLocaleString()} ({remainingDays} days)
+                  <strong className="text-foreground">Remaining this week:</strong> ₦{(remainingDays * dailyPremium).toLocaleString()} ({remainingDays} days)
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Plan: {profile?.plan_tier?.toUpperCase()} - ₦{dailyPremium}/day
                 </p>
               </div>
-              <Button className="w-full">
-                Pay Today's Premium (₦200)
-              </Button>
+              <PaystackPayment 
+                amount={dailyPremium} 
+                paymentType="daily_premium"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md transition-colors"
+              >
+                Pay Today's Premium (₦{dailyPremium.toLocaleString()})
+              </PaystackPayment>
             </div>
-          ) : (
+          ) : !hasRegistrationFee ? (
             <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg text-center">
               <p className="text-sm text-green-600 dark:text-green-400 font-medium">
                 ✓ All payments complete for this week!
               </p>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Info Box */}
         <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-900">
           <h4 className="font-medium text-foreground text-sm mb-2">Important Information</h4>
           <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• Maintain 5 consecutive days of payment to be eligible for claims</li>
+            <li>• One-time registration fee: ₦{registrationFee.toLocaleString()} (required before daily payments)</li>
+            <li>• Maintain 4 consecutive days of payment to be eligible for claims</li>
+            <li>• You can choose which days to pay, but they must be consecutive</li>
+            <li>• Daily premium varies by plan: Bronze (₦200), Silver (₦350), Gold (₦500)</li>
             <li>• Missing a payment resets your eligibility counter</li>
             <li>• Premium must be paid before 11:59 PM each day</li>
-            <li>• Claims can be filed anytime after achieving eligibility</li>
+            <li>• Claims can be filed anytime after achieving 4 consecutive days eligibility</li>
           </ul>
         </div>
       </CardContent>
