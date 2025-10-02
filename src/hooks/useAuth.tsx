@@ -12,6 +12,11 @@ interface Profile {
   plan_tier: string;
   wallet_balance: number;
   registration_status: string;
+  last_login_ip: string | null;
+  last_login_at: string | null;
+  trusted_devices: any;
+  mfa_enabled: boolean;
+  mfa_secret: string | null;
 }
 
 export const useAuth = () => {
@@ -38,7 +43,7 @@ export const useAuth = () => {
               ]);
               
               if (profileResult.data) {
-                setProfile(profileResult.data);
+                setProfile(profileResult.data as Profile);
               }
               
               if (roleResult.data) {

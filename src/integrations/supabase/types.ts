@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       claims: {
         Row: {
           claim_amount: number
@@ -84,9 +123,14 @@ export type Database = {
           designated_route: string | null
           full_name: string | null
           id: string
+          last_login_at: string | null
+          last_login_ip: unknown | null
+          mfa_enabled: boolean | null
+          mfa_secret: string | null
           phone: string | null
           plan_tier: string | null
           registration_status: string | null
+          trusted_devices: Json | null
           updated_at: string
           user_id: string
           vehicle_color: string | null
@@ -100,9 +144,14 @@ export type Database = {
           designated_route?: string | null
           full_name?: string | null
           id?: string
+          last_login_at?: string | null
+          last_login_ip?: unknown | null
+          mfa_enabled?: boolean | null
+          mfa_secret?: string | null
           phone?: string | null
           plan_tier?: string | null
           registration_status?: string | null
+          trusted_devices?: Json | null
           updated_at?: string
           user_id: string
           vehicle_color?: string | null
@@ -116,9 +165,14 @@ export type Database = {
           designated_route?: string | null
           full_name?: string | null
           id?: string
+          last_login_at?: string | null
+          last_login_ip?: unknown | null
+          mfa_enabled?: boolean | null
+          mfa_secret?: string | null
           phone?: string | null
           plan_tier?: string | null
           registration_status?: string | null
+          trusted_devices?: Json | null
           updated_at?: string
           user_id?: string
           vehicle_color?: string | null
