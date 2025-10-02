@@ -8,6 +8,7 @@ import WeeklyCompliance from "@/components/WeeklyCompliance";
 import WalletHistory from "@/components/WalletHistory";
 import PaystackPayment from "@/components/PaystackPayment";
 import { useState } from "react";
+import { toast } from "sonner";
 import logoImage from "@/assets/transitcares-logo.jpg";
 const UserDashboard = () => {
   const { user, profile } = useAuth();
@@ -107,9 +108,14 @@ const UserDashboard = () => {
                     paymentType="topup"
                     className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md text-sm transition-colors"
                   >
-                    Top Up
+                    Top Up Wallet
                   </PaystackPayment>
-                  <Button variant="outline" size="sm" className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => toast.info("Withdrawal feature", { description: "Coming soon! Contact support for assistance." })}
+                  >
                     Withdraw
                   </Button>
                 </div>
@@ -145,7 +151,10 @@ const UserDashboard = () => {
                     </p>
                   </div>
                 </div>
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate(profile?.registration_status === 'completed' ? '/profile' : '/registration')}
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   {profile?.registration_status === 'completed' ? 'View Documents' : 'Complete Registration'}
                 </Button>
