@@ -8,6 +8,7 @@ import WeeklyCompliance from "@/components/WeeklyCompliance";
 import WalletHistory from "@/components/WalletHistory";
 import PaystackPayment from "@/components/PaystackPayment";
 import { useState } from "react";
+import logoImage from "@/assets/transitcares-logo.jpg";
 const UserDashboard = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
@@ -15,14 +16,23 @@ const UserDashboard = () => {
   if (!user) {
     return <section className="py-16 bg-background border-b">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
-            Get Started with TransitCare
-          </h2>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <img src={logoImage} alt="TransitCares Logo" className="h-16 w-16 object-contain" />
+            <h2 className="text-3xl font-montserrat font-bold">
+              Get Started with <span className="text-brand-transit">Transit</span><span className="text-brand-cares">Cares</span>
+            </h2>
+          </div>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
             Join thousands of transport operators who trust us with their daily repairs insurance needs. 
             Sign up today and protect your vehicle with our flexible, affordable repair coverage plans.
           </p>
-          <Button size="lg" onClick={() => navigate("/auth")} className="bg-sky-500 hover:bg-sky-400 text-base font-semibold text-slate-50">Get covered in 5 minutes or less</Button>
+          <Button 
+            size="lg" 
+            onClick={() => navigate("/auth")} 
+            className="bg-primary hover:bg-primary/90 text-base font-montserrat font-semibold text-primary-foreground"
+          >
+            Get covered in 5 minutes or less
+          </Button>
         </div>
       </section>;
   }
