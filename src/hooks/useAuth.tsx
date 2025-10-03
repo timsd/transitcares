@@ -17,6 +17,12 @@ interface Profile {
   trusted_devices: any;
   mfa_enabled: boolean;
   mfa_secret: string | null;
+  bank_name: string | null;
+  account_number: string | null;
+  account_name: string | null;
+  vehicle_color: string | null;
+  chassis_number: string | null;
+  designated_route: string | null;
 }
 
 export const useAuth = () => {

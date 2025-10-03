@@ -1,21 +1,30 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Wallet, FileText, CheckCircle } from "lucide-react";
+import { CreditCard, Wallet, FileText, CheckCircle, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 import { useNavigate } from "react-router-dom";
 import WeeklyCompliance from "@/components/WeeklyCompliance";
 import WalletHistory from "@/components/WalletHistory";
 import PaystackPayment from "@/components/PaystackPayment";
+import { WithdrawalDialog } from "./WithdrawalDialog";
 import { useState } from "react";
 import { toast } from "sonner";
 import logoImage from "@/assets/transitcares-logo.jpg";
+
 const UserDashboard = () => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [topUpAmount, setTopUpAmount] = useState(1000);
+  const [showWithdrawal, setShowWithdrawal] = useState(false);
+  
+  // Initialize device fingerprinting
+  useDeviceFingerprint(user?.id);
+
   if (!user) {
-    return <section className="py-16 bg-background border-b">
+    return (
+      <section className="py-16 bg-background border-b">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-montserrat font-bold mb-4">
             Get Started with <span className="text-brand-transit">Transit</span><span className="text-brand-cares">Cares</span>
@@ -32,9 +41,12 @@ const UserDashboard = () => {
             Get covered in 5 minutes or less
           </Button>
         </div>
-      </section>;
+      </section>
+    );
   }
-  return <section id="dashboard" className="py-16 bg-secondary/30">
+
+  return (
+    <section id="dashboard" className="py-16 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -49,35 +61,28 @@ const UserDashboard = () => {
           {/* Profile Overview Card */}
           <Card className="shadow-[var(--shadow-soft)]">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-foreground">
-                <CreditCard className="h-5 w-5 text-primary" />
-                Profile Overview
-              </CardTitle>
+              <CardTitle className="text-foreground">Profile</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Vehicle ID</p>
-                <p className="font-semibold text-foreground">{profile?.vehicle_id || "Not Set"}</p>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Current Tier</p>
-                <Badge variant="secondary" className="text-transport-orange">
-                  {profile?.plan_tier ? `${profile.plan_tier.charAt(0).toUpperCase() + profile.plan_tier.slice(1)} Plan` : "No Plan"}
+                <p className="font-medium text-foreground">{profile?.vehicle_id || 'Not set'}</p>
+                <p className="text-sm text-muted-foreground mt-4">Plan Tier</p>
+                <Badge variant="outline" className="mt-1 capitalize">
+                  {profile?.plan_tier || 'Bronze'}
                 </Badge>
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Registration Status</p>
-                <p className="font-semibold text-foreground capitalize">{profile?.registration_status || "Pending"}</p>
+                <Button 
+                  className="w-full mt-4" 
+                  variant="outline"
+                  onClick={() => navigate("/profile")}
+                >
+                  View Full Profile
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Weekly Compliance Card */}
-          <Card className="md:col-span-2 shadow-[var(--shadow-soft)]">
-            <WeeklyCompliance />
-          </Card>
-
-          {/* Wallet Card with Quick Actions */}
+          {/* Wallet Card */}
           <Card className="shadow-[var(--shadow-soft)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
@@ -85,47 +90,46 @@ const UserDashboard = () => {
                 Wallet Balance
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-lg font-semibold text-foreground">Available Balance</p>
-                <p className="text-3xl font-bold text-transport-green">₦{profile?.wallet_balance?.toLocaleString() || "0"}</p>
-              </div>
-              <div className="space-y-3">
-                <div className="flex gap-2">
-                  <input 
-                    type="number" 
-                    value={topUpAmount}
-                    onChange={(e) => setTopUpAmount(Number(e.target.value))}
-                    min="100"
-                    step="100"
-                    className="flex-1 px-3 py-2 border border-border rounded-md text-sm"
-                    placeholder="Amount"
-                  />
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-3xl font-bold text-foreground">
+                    ₦{Number(profile?.wallet_balance || 0).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">Available balance</p>
                 </div>
                 <div className="flex gap-2">
-                  <PaystackPayment 
-                    amount={topUpAmount} 
-                    paymentType="topup"
-                    className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-md text-sm transition-colors"
+                  <PaystackPayment amount={topUpAmount} paymentType="topup" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowWithdrawal(true)}
                   >
-                    Top Up Wallet
-                  </PaystackPayment>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => toast.info("Withdrawal feature", { description: "Coming soon! Contact support for assistance." })}
-                  >
+                    <DollarSign className="mr-2 h-4 w-4" />
                     Withdraw
                   </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
-          {/* Wallet History */}
-          <Card className="md:col-span-2 lg:col-span-3 shadow-[var(--shadow-soft)]">
-            <WalletHistory />
+
+          {/* Daily Payment Card */}
+          <Card className="shadow-[var(--shadow-soft)]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-foreground">
+                <CreditCard className="h-5 w-5 text-primary" />
+                Daily Payment
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-2xl font-bold text-foreground">₦500</p>
+                  <p className="text-sm text-muted-foreground mt-1">Daily premium</p>
+                </div>
+                <PaystackPayment amount={500} paymentType="daily_premium" />
+              </div>
+            </CardContent>
           </Card>
 
           {/* Registration Status Card */}
@@ -161,8 +165,22 @@ const UserDashboard = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Weekly Compliance */}
+          <Card className="md:col-span-2 lg:col-span-3 shadow-[var(--shadow-soft)]">
+            <WeeklyCompliance />
+          </Card>
+
+          {/* Wallet History */}
+          <Card className="md:col-span-2 lg:col-span-3 shadow-[var(--shadow-soft)]">
+            <WalletHistory />
+          </Card>
         </div>
       </div>
-    </section>;
+      
+      <WithdrawalDialog open={showWithdrawal} onOpenChange={setShowWithdrawal} />
+    </section>
+  );
 };
+
 export default UserDashboard;
