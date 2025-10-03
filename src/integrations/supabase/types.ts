@@ -118,6 +118,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_name: string | null
+          account_number: string | null
+          bank_name: string | null
           chassis_number: string | null
           created_at: string
           designated_route: string | null
@@ -139,6 +142,9 @@ export type Database = {
           wallet_balance: number | null
         }
         Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
           chassis_number?: string | null
           created_at?: string
           designated_route?: string | null
@@ -160,6 +166,9 @@ export type Database = {
           wallet_balance?: number | null
         }
         Update: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
           chassis_number?: string | null
           created_at?: string
           designated_route?: string | null
@@ -196,6 +205,51 @@ export type Database = {
         Update: {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          account_name: string
+          account_number: string
+          admin_notes: string | null
+          amount: number
+          approved_at: string | null
+          approved_by: string | null
+          bank_name: string
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          account_number: string
+          admin_notes?: string | null
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_name: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          admin_notes?: string | null
+          amount?: number
+          approved_at?: string | null
+          approved_by?: string | null
+          bank_name?: string
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
