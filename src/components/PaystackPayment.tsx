@@ -1,4 +1,4 @@
-import { PaystackButton } from 'react-paystack';
+import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useConvex } from 'convex/react';
@@ -21,6 +21,17 @@ const PaystackPayment = ({
   className 
 }: PaystackPaymentProps) => {
   const { user, profile } = useAuth();
+  const [PaystackButtonComp, setPaystackButtonComp] = useState<any>(null)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('react-paystack').then((mod) => {
+        setPaystackButtonComp(() => mod.PaystackButton)
+      }).catch(() => {
+        setPaystackButtonComp(null)
+      })
+    }
+  }, [])
   const convex = useConvex();
   
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string || "";
@@ -96,6 +107,19 @@ const PaystackPayment = ({
     },
   };
 
+  if (!PaystackButtonComp) {
+    return children ? (
+      <button className={className || "bg-primary text-primary-foreground px-4 py-2 rounded-md opacity-70 cursor-not-allowed"} disabled>
+        {children}
+      </button>
+    ) : (
+      <button className={className || "bg-primary text-primary-foreground px-4 py-2 rounded-md opacity-70 cursor-not-allowed"} disabled>
+        Pay Now
+      </button>
+    )
+  }
+
+  const PaystackButton = PaystackButtonComp
   return children ? (
     <PaystackButton {...componentProps} className={className}>
       {children}
