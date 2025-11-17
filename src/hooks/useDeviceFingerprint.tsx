@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import FingerprintJS from "@fingerprintjs/fingerprintjs";
-import { supabase } from "@/integrations/supabase/client";
+import { useConvex } from "convex/react";
 
 export const useDeviceFingerprint = (userId: string | undefined) => {
   const [fingerprint, setFingerprint] = useState<string | null>(null);
+  const convex = useConvex();
 
   useEffect(() => {
     const initFingerprint = async () => {
@@ -21,13 +22,7 @@ export const useDeviceFingerprint = (userId: string | undefined) => {
         const ipData = await ipResponse.json();
         
         // Update user's device info
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("trusted_devices")
-          .eq("user_id", userId)
-          .single();
-
-        const trustedDevices = (profile?.trusted_devices as any[]) || [];
+        const trustedDevices: any[] = []
         const deviceExists = Array.isArray(trustedDevices) && trustedDevices.some((d: any) => d.fingerprint === visitorId);
 
         if (!deviceExists) {
@@ -38,14 +33,17 @@ export const useDeviceFingerprint = (userId: string | undefined) => {
             lastSeen: new Date().toISOString(),
           };
 
-          await supabase
-            .from("profiles")
-            .update({
+          try {
+            const key = 'profile:' + userId
+            const prof = JSON.parse(localStorage.getItem(key) || '{}')
+            const updated = {
+              ...prof,
               trusted_devices: Array.isArray(trustedDevices) ? [...trustedDevices, newDevice] : [newDevice],
               last_login_ip: ipData.ip,
               last_login_at: new Date().toISOString(),
-            })
-            .eq("user_id", userId);
+            }
+            localStorage.setItem(key, JSON.stringify(updated))
+          } catch {}
         } else if (Array.isArray(trustedDevices)) {
           // Update last seen
           const updatedDevices = trustedDevices.map((d: any) =>
@@ -54,14 +52,17 @@ export const useDeviceFingerprint = (userId: string | undefined) => {
               : d
           );
 
-          await supabase
-            .from("profiles")
-            .update({
+          try {
+            const key = 'profile:' + userId
+            const prof = JSON.parse(localStorage.getItem(key) || '{}')
+            const updated = {
+              ...prof,
               trusted_devices: updatedDevices,
               last_login_ip: ipData.ip,
               last_login_at: new Date().toISOString(),
-            })
-            .eq("user_id", userId);
+            }
+            localStorage.setItem(key, JSON.stringify(updated))
+          } catch {}
         }
       } catch (error) {
         console.error("Error initializing fingerprint:", error);

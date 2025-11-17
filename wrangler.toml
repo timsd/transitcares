@@ -1,0 +1,13 @@
+name = "ajo-safe-ride-worker"
+compatibility_date = "2024-09-01"
+
+[vars]
+FIRECRAWL_API_KEY = ""
+FIRECRAWL_URL = "https://api.firecrawl.dev/v1/crawl"
+API_TOKEN = ""
+AUTH_JWT_SECRET = ""
+ADMIN_EMAILS = ""
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "ajo-safe-ride-uploads"

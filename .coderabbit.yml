@@ -1,0 +1,11 @@
+version: 1
+checks:
+  severity: medium
+  enable:
+    - performance
+    - readability
+    - security
+    - maintainability
+notifications:
+  pull_requests: true
+  commits: false

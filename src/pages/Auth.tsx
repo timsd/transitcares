@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
+import { authClient } from "@/integrations/auth/client";
 import { z } from "zod";
 
 const authSchema = z.object({
@@ -26,13 +26,13 @@ const Auth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const unsubscribe = authClient.onAuthStateChange((session) => {
       if (session?.user) {
         navigate("/");
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,35 +47,27 @@ const Auth = () => {
       authSchema.parse(validationData);
 
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        await authClient.signInWithPassword({
           email: formData.email,
           password: formData.password,
         });
-
-        if (error) throw error;
 
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
         });
       } else {
-        const { error } = await supabase.auth.signUp({
+        await authClient.signUp({
           email: formData.email,
           password: formData.password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: {
-              full_name: formData.fullName,
-            },
-          },
+          full_name: formData.fullName,
         });
-
-        if (error) throw error;
 
         toast({
           title: "Account created!",
-          description: "Please check your email to verify your account.",
+          description: "Next, complete your vehicle profile to enable claims.",
         });
+        navigate('/profile')
       }
     } catch (error: any) {
       if (error instanceof z.ZodError) {

@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "@/lib/navigation";
 import { Shield, Clock, TrendingUp } from "lucide-react";
 import heroImage from "@/assets/hero-transport-street.png";
 const HeroSection = () => {
+  const navigate = useNavigate();
   return <section className="relative min-h-[600px] bg-[var(--gradient-hero)] overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 opacity-70">
@@ -24,8 +26,10 @@ const HeroSection = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 mb-12">
-            <Button variant="accent" size="xl" className="text-lg font-semibold">Get covered in 5 minutes or less</Button>
-            <Button variant="outline" size="xl" className="bg-background/80 border-foreground/30 text-foreground hover:bg-background/90 font-semibold">
+            <Button variant="accent" size="xl" className="text-lg font-semibold"
+              onClick={() => navigate('/registration')}>Get covered in 5 minutes or less</Button>
+            <Button variant="outline" size="xl" className="bg-background/80 border-foreground/30 text-foreground hover:bg-background/90 font-semibold"
+              onClick={() => { navigate('/'); setTimeout(() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
               View Our Plans
             </Button>
           </div>

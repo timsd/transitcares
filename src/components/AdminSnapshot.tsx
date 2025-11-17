@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, DollarSign, FileText, TrendingUp, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useConvex } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AdminStats {
@@ -46,74 +46,28 @@ const AdminSnapshot = () => {
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
+  const convex = useConvex();
   const fetchAdminData = async () => {
     try {
       setLoading(true);
-
-      // Fetch total users
-      const { count: totalUsers } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      // Fetch monthly revenue
       const currentMonth = new Date();
       currentMonth.setDate(1);
-      const { data: payments } = await supabase
-        .from('payments')
-        .select('amount')
-        .gte('created_at', currentMonth.toISOString());
-
-      const monthlyRevenue = payments?.reduce((sum, payment) => 
-        sum + parseFloat(payment.amount.toString()), 0) || 0;
-
-      // Fetch claims processed this month
-      const { count: claimsProcessed } = await supabase
-        .from('claims')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', currentMonth.toISOString());
-
-      // Fetch plan distribution
-      const { data: planData } = await supabase
-        .from('profiles')
-        .select('plan_tier');
-
-      const distribution = planData?.reduce((acc, profile) => {
-        const plan = profile.plan_tier || 'bronze';
-        acc[plan as keyof PlanDistribution] = (acc[plan as keyof PlanDistribution] || 0) + 1;
-        return acc;
-      }, { bronze: 0, silver: 0, gold: 0 }) || { bronze: 0, silver: 0, gold: 0 };
-
-      // Fetch recent activity
-      const { data: recentPayments } = await supabase
-        .from('payments')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const { data: recentClaims } = await supabase
-        .from('claims')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      // Combine and format recent activity
+      const profiles = convex ? await convex.query('profiles:list', {} as any) : []
+      const payments = convex ? await convex.query('payments:list', {} as any) : []
+      const claims = convex ? await convex.query('claims:list', {} as any) : []
+      const totalUsers = (profiles as any[]).length
+      const monthlyRevenue = (payments as any[]).filter((p) => new Date(p.created_at) >= currentMonth).reduce((sum, p: any) => sum + Number(p.amount || 0), 0)
+      const claimsProcessed = (claims as any[]).filter((c) => new Date(c.created_at) >= currentMonth && c.claim_status === 'approved').length
+      const distribution = (profiles as any[]).reduce((acc: any, prof: any) => {
+        const plan = prof.plan_tier || 'bronze'
+        acc[plan] = (acc[plan] || 0) + 1
+        return acc
+      }, { bronze: 0, silver: 0, gold: 0 })
+      const recentPayments = (payments as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(5)
+      const recentClaims = (claims as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(5)
       const activity: RecentActivity[] = [
-        ...(recentPayments?.map(p => ({
-          id: p.id,
-          type: 'payment' as const,
-          vehicle_id: `Payment-${p.id.slice(0, 8)}`,
-          amount: parseFloat(p.amount.toString()),
-          status: p.payment_status,
-          created_at: p.created_at
-        })) || []),
-        ...(recentClaims?.map(c => ({
-          id: c.id,
-          type: 'claim' as const,
-          vehicle_id: `Claim-${c.id.slice(0, 8)}`,
-          amount: parseFloat(c.claim_amount.toString()),
-          status: c.claim_status,
-          created_at: c.created_at
-        })) || [])
+        ...recentPayments.map((p: any) => ({ id: p._id || p.id, type: 'payment' as const, vehicle_id: `Payment-${(p._id || p.id).toString().slice(0, 8)}`, amount: Number(p.amount || 0), status: 'completed', created_at: p.created_at })),
+        ...recentClaims.map((c: any) => ({ id: c._id || c.id, type: 'claim' as const, vehicle_id: `Claim-${(c._id || c.id).toString().slice(0, 8)}`, amount: Number(c.claim_amount || 0), status: c.claim_status, created_at: c.created_at }))
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 6);
 
       setStats({

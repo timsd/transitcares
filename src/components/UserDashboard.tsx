@@ -4,12 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { CreditCard, Wallet, FileText, CheckCircle, DollarSign } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 import WeeklyCompliance from "@/components/WeeklyCompliance";
 import WalletHistory from "@/components/WalletHistory";
 import PaystackPayment from "@/components/PaystackPayment";
 import { WithdrawalDialog } from "./WithdrawalDialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import logoImage from "@/assets/transitcares-logo.jpg";
 
@@ -18,9 +18,18 @@ const UserDashboard = () => {
   const navigate = useNavigate();
   const [topUpAmount, setTopUpAmount] = useState(1000);
   const [showWithdrawal, setShowWithdrawal] = useState(false);
+  const [dailyPremium, setDailyPremium] = useState<number | null>(null);
   
   // Initialize device fingerprinting
   useDeviceFingerprint(user?.id);
+
+  useEffect(() => {
+    const tier = profile?.plan_tier
+    if (tier === 'gold') setDailyPremium(4000)
+    else if (tier === 'silver') setDailyPremium(2500)
+    else if (tier === 'bronze') setDailyPremium(1500)
+    else setDailyPremium(null)
+  }, [profile?.plan_tier])
 
   if (!user) {
     return (
@@ -69,7 +78,7 @@ const UserDashboard = () => {
                 <p className="font-medium text-foreground">{profile?.vehicle_id || 'Not set'}</p>
                 <p className="text-sm text-muted-foreground mt-4">Plan Tier</p>
                 <Badge variant="outline" className="mt-1 capitalize">
-                  {profile?.plan_tier || 'Bronze'}
+                  {profile?.plan_tier ? profile.plan_tier : 'Not set'}
                 </Badge>
                 <Button 
                   className="w-full mt-4" 
@@ -124,10 +133,10 @@ const UserDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <p className="text-2xl font-bold text-foreground">₦500</p>
+                  <p className="text-2xl font-bold text-foreground">₦{(dailyPremium ?? 0).toLocaleString()}</p>
                   <p className="text-sm text-muted-foreground mt-1">Daily premium</p>
                 </div>
-                <PaystackPayment amount={500} paymentType="daily_premium" />
+                <PaystackPayment amount={dailyPremium ?? 0} paymentType="daily_premium" />
               </div>
             </CardContent>
           </Card>

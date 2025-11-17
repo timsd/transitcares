@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 
 const MobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,9 +19,10 @@ const MobileMenu = () => {
     setIsOpen(false);
   };
 
-  const handleNavClick = (href: string) => {
+  const handleNavClick = (id: string) => {
     setIsOpen(false);
-    document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+    navigate('/');
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
   return (
@@ -40,28 +41,28 @@ const MobileMenu = () => {
           <Button 
             variant="ghost" 
             className="justify-start text-left"
-            onClick={() => handleNavClick('#dashboard')}
+            onClick={() => handleNavClick('dashboard')}
           >
             Dashboard
           </Button>
           <Button 
             variant="ghost" 
             className="justify-start text-left"
-            onClick={() => handleNavClick('#plans')}
+            onClick={() => handleNavClick('plans')}
           >
             Plans
           </Button>
           <Button 
             variant="ghost" 
             className="justify-start text-left"
-            onClick={() => handleNavClick('#claims')}
+            onClick={() => handleNavClick('claims')}
           >
             Claims
           </Button>
           <Button 
             variant="ghost" 
             className="justify-start text-left"
-            onClick={() => handleNavClick('#support')}
+            onClick={() => handleNavClick('support')}
           >
             Support
           </Button>

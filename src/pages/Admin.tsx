@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "@/lib/navigation";
+// supabase removed in favor of local storage during migration
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Users, FileText, DollarSign, TrendingUp, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Users, FileText, DollarSign, TrendingUp, CheckCircle, XCircle, Clock, Search } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useConvex } from "convex/react";
 import {
   Dialog,
   DialogContent,
@@ -75,6 +76,9 @@ const Admin = () => {
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const convex = useConvex();
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -98,123 +102,145 @@ const Admin = () => {
   };
 
   const fetchClaims = async () => {
-    const { data, error } = await supabase
-      .from("claims")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({ title: "Error fetching claims", variant: "destructive" });
-      return;
+    let raw = [] as any[]
+    if (convex) {
+      try {
+        raw = await convex.query('claims:list', { user_id: undefined } as any)
+      } catch {}
+    } else {
+      raw = JSON.parse(localStorage.getItem('claims') || '[]')
     }
-
-    // Fetch user profiles separately
-    const claimsWithProfiles = await Promise.all(
-      (data || []).map(async (claim) => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, phone, vehicle_id")
-          .eq("user_id", claim.user_id)
-          .single();
-        
-        return { ...claim, profiles: profile || { full_name: "", phone: "", vehicle_id: "" } };
-      })
-    );
-
-    setClaims(claimsWithProfiles as any);
+    const mapped: Claim[] = raw.map((c: any) => {
+      const uid = c.user_id
+      const profKey = uid ? 'profile:' + uid : null
+      const prof = profKey ? JSON.parse(localStorage.getItem(profKey) || '{}') : {}
+      return {
+        id: c.id,
+        user_id: uid,
+        claim_type: c.claim_type ?? c.type ?? 'Repair',
+        claim_amount: Number(c.claim_amount ?? c.amount ?? 0),
+        claim_status: c.claim_status ?? c.status ?? 'pending',
+        description: c.description ?? '',
+        created_at: c.created_at ?? c.date ?? new Date().toISOString(),
+        profiles: {
+          full_name: prof.full_name || c.profiles?.full_name || '',
+          phone: prof.phone || c.profiles?.phone || '',
+          vehicle_id: prof.vehicle_id || c.profiles?.vehicle_id || '',
+        },
+      }
+    })
+    setClaims(mapped)
   };
 
   const fetchWithdrawals = async () => {
-    const { data, error } = await supabase
-      .from("withdrawals")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({ title: "Error fetching withdrawals", variant: "destructive" });
-      return;
+    let raw = [] as any[]
+    if (convex) {
+      try {
+        raw = await convex.query('withdrawals:list', { user_id: undefined } as any)
+      } catch {}
+    } else {
+      raw = JSON.parse(localStorage.getItem('withdrawals') || '[]')
     }
-
-    // Fetch user profiles separately
-    const withdrawalsWithProfiles = await Promise.all(
-      (data || []).map(async (withdrawal) => {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, phone")
-          .eq("user_id", withdrawal.user_id)
-          .single();
-        
-        return { ...withdrawal, profiles: profile || { full_name: "", phone: "" } };
-      })
-    );
-
-    setWithdrawals(withdrawalsWithProfiles as any);
+    const mapped: Withdrawal[] = raw.map((w: any) => {
+      const uid = w.user_id
+      const profKey = uid ? 'profile:' + uid : null
+      const prof = profKey ? JSON.parse(localStorage.getItem(profKey) || '{}') : {}
+      return {
+        id: w.id,
+        user_id: uid,
+        amount: Number(w.amount ?? 0),
+        bank_name: w.bank_name ?? '',
+        account_number: w.account_number ?? '',
+        account_name: w.account_name ?? '',
+        status: w.status ?? 'pending',
+        created_at: w.created_at ?? new Date().toISOString(),
+        profiles: {
+          full_name: prof.full_name || w.profiles?.full_name || '',
+          phone: prof.phone || w.profiles?.phone || '',
+        },
+      }
+    })
+    setWithdrawals(mapped)
   };
 
   const fetchUsers = async () => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast({ title: "Error fetching users", variant: "destructive" });
-    } else {
-      setUsers(data || []);
+    if (convex) {
+      try {
+        const data = await convex.query('profiles:list', {} as any)
+        setUsers(data as any)
+        return
+      } catch {}
     }
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith('profile:'))
+    const data = keys.map((k) => JSON.parse(localStorage.getItem(k) || '{}'))
+    setUsers(data)
   };
 
   const fetchStats = async () => {
-    const { data: usersData } = await supabase.from("profiles").select("id");
-    const { data: claimsData } = await supabase.from("claims").select("id").eq("claim_status", "pending");
-    const { data: paymentsData } = await supabase.from("payments").select("amount");
-    const { data: withdrawalsData } = await supabase.from("withdrawals").select("id").eq("status", "pending");
-
+    const usersData = Object.keys(localStorage).filter((k) => k.startsWith('profile:'))
+    const claimsData = JSON.parse(localStorage.getItem('claims') || '[]')
+    const paymentsData = JSON.parse(localStorage.getItem('payments') || '[]')
+    const withdrawalsData = JSON.parse(localStorage.getItem('withdrawals') || '[]')
     setStats({
-      totalUsers: usersData?.length || 0,
-      pendingClaims: claimsData?.length || 0,
-      totalPayments: paymentsData?.reduce((sum, p) => sum + Number(p.amount), 0) || 0,
-      pendingWithdrawals: withdrawalsData?.length || 0,
-    });
+      totalUsers: usersData.length,
+      pendingClaims: claimsData.filter((c: any) => (c.claim_status ?? c.status) === 'pending').length,
+      totalPayments: paymentsData.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0),
+      pendingWithdrawals: withdrawalsData.filter((w: any) => w.status === 'pending').length,
+    })
   };
 
   const handleClaimAction = async (claimId: string, action: "approved" | "rejected") => {
-    const { error } = await supabase
-      .from("claims")
-      .update({
-        claim_status: action,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", claimId);
-
-    if (error) {
-      toast({ title: "Error updating claim", variant: "destructive" });
+    if (convex) {
+      try {
+        await convex.mutation('claims:updateStatus', { id: claimId as any, status: action } as any)
+        toast({ title: `Claim ${action}`, description: `The claim has been ${action}` })
+        setSelectedClaim(null)
+        fetchData()
+        return
+      } catch {}
+    }
+    const claims = JSON.parse(localStorage.getItem('claims') || '[]')
+    const idx = claims.findIndex((c: any) => c.id === claimId)
+    if (idx >= 0) {
+      claims[idx] = { ...claims[idx], claim_status: action, updated_at: new Date().toISOString() }
+      localStorage.setItem('claims', JSON.stringify(claims))
+      toast({ title: `Claim ${action}`, description: `The claim has been ${action}` })
+      setSelectedClaim(null)
+      fetchData()
     } else {
-      toast({ title: `Claim ${action}`, description: `The claim has been ${action}` });
-      setSelectedClaim(null);
-      fetchData();
+      toast({ title: "Error updating claim", variant: "destructive" })
     }
   };
 
   const handleWithdrawalAction = async (withdrawalId: string, action: "approved" | "rejected") => {
-    const { error } = await supabase
-      .from("withdrawals")
-      .update({
+    if (convex) {
+      try {
+        await convex.mutation('withdrawals:updateStatus', { id: withdrawalId as any, status: action, admin_notes: adminNotes, approved_by: user?.id } as any)
+        toast({ title: `Withdrawal ${action}`, description: `The withdrawal has been ${action}` })
+        setSelectedWithdrawal(null)
+        setAdminNotes("")
+        fetchData()
+        return
+      } catch {}
+    }
+    const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]')
+    const idx = withdrawals.findIndex((w: any) => w.id === withdrawalId)
+    if (idx >= 0) {
+      withdrawals[idx] = {
+        ...withdrawals[idx],
         status: action,
         admin_notes: adminNotes,
         approved_by: user?.id,
         approved_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      })
-      .eq("id", withdrawalId);
-
-    if (error) {
-      toast({ title: "Error updating withdrawal", variant: "destructive" });
+      }
+      localStorage.setItem('withdrawals', JSON.stringify(withdrawals))
+      toast({ title: `Withdrawal ${action}`, description: `The withdrawal has been ${action}` })
+      setSelectedWithdrawal(null)
+      setAdminNotes("")
+      fetchData()
     } else {
-      toast({ title: `Withdrawal ${action}`, description: `The withdrawal has been ${action}` });
-      setSelectedWithdrawal(null);
-      setAdminNotes("");
-      fetchData();
+      toast({ title: "Error updating withdrawal", variant: "destructive" })
     }
   };
 
@@ -229,6 +255,30 @@ const Admin = () => {
         <h1 className="text-4xl font-bold mb-8" style={{ fontFamily: 'Montserrat, sans-serif' }}>
           Admin Dashboard
         </h1>
+
+        <div className="flex gap-3 mb-6">
+          <Button variant="outline" onClick={async () => {
+            if (!convex) return
+            try {
+              const claims = JSON.parse(localStorage.getItem('claims') || '[]')
+              for (const c of claims) {
+                await convex.mutation('claims:create', { user_id: c.user_id, claim_type: c.claim_type || c.type || 'Repair', claim_amount: Number(c.claim_amount ?? c.amount ?? 0), description: c.description || '' } as any)
+              }
+              const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]')
+              for (const w of withdrawals) {
+                await convex.mutation('withdrawals:create', { user_id: w.user_id, amount: Number(w.amount || 0), bank_name: w.bank_name || '', account_number: w.account_number || '', account_name: w.account_name || '' } as any)
+              }
+              const payments = JSON.parse(localStorage.getItem('payments') || '[]')
+              for (const p of payments) {
+                await convex.mutation('payments:record', { user_id: p.user_id, amount: Number(p.amount || 0), payment_type: p.payment_type || 'topup', plan_tier: p.plan_tier || '' } as any)
+              }
+              toast({ title: 'Migration complete' })
+              await fetchData()
+            } catch (e: any) {
+              toast({ title: 'Migration error', description: e.message, variant: 'destructive' })
+            }
+          }}>Migrate local data to Convex</Button>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -296,7 +346,10 @@ const Admin = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {claims.map((claim) => (
+                    {claims
+                      .filter((c) => (statusFilter ? (c.claim_status ?? c.status) === statusFilter : true))
+                      .filter((c) => (search ? (c.profiles?.full_name || "").toLowerCase().includes(search.toLowerCase()) || (c.profiles?.vehicle_id || "").toLowerCase().includes(search.toLowerCase()) : true))
+                      .map((claim) => (
                       <TableRow key={claim.id}>
                         <TableCell>
                           <div>
@@ -329,6 +382,19 @@ const Admin = () => {
                     ))}
                   </TableBody>
                 </Table>
+                <div className="flex items-center gap-3 mt-4">
+                  <div className="flex items-center border border-border rounded px-2 py-1">
+                    <Search className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search by name or vehicle" className="bg-transparent outline-none text-sm" />
+                  </div>
+                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="border border-border rounded px-2 py-1 text-sm">
+                    <option value="">All</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <Button variant="outline" size="sm" onClick={() => { setSearch(""); setStatusFilter("") }}>Reset</Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

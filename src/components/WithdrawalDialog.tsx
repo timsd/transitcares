@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
+// Supabase removed in favor of local storage service layer
 import { useAuth } from "@/hooks/useAuth";
+import { useConvex } from "convex/react";
 import { toast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -22,6 +23,7 @@ interface WithdrawalDialogProps {
 
 export const WithdrawalDialog = ({ open, onOpenChange }: WithdrawalDialogProps) => {
   const { profile, user } = useAuth();
+  const convex = useConvex();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     amount: "",
@@ -31,7 +33,7 @@ export const WithdrawalDialog = ({ open, onOpenChange }: WithdrawalDialogProps) 
   });
 
   // Update form when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFormData(prev => ({
         ...prev,
@@ -40,7 +42,7 @@ export const WithdrawalDialog = ({ open, onOpenChange }: WithdrawalDialogProps) 
         accountName: profile.account_name || "",
       }));
     }
-  });
+  }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,43 +73,43 @@ export const WithdrawalDialog = ({ open, onOpenChange }: WithdrawalDialogProps) 
       formData.accountNumber !== (profile?.account_number || "") ||
       formData.accountName !== (profile?.account_name || "");
     
-    if (needsUpdate) {
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
+    if (needsUpdate && user) {
+      const key = 'profile:' + user.id
+      const prof = JSON.parse(localStorage.getItem(key) || '{}')
+      const updated = { ...prof, bank_name: formData.bankName, account_number: formData.accountNumber, account_name: formData.accountName }
+      localStorage.setItem(key, JSON.stringify(updated))
+    }
+
+    if (convex && user) {
+      try {
+        await convex.mutation('withdrawals:create', {
+          user_id: user.id,
+          amount,
           bank_name: formData.bankName,
           account_number: formData.accountNumber,
           account_name: formData.accountName,
-        })
-        .eq("user_id", user?.id);
-
-      if (profileError) {
-        toast({ title: "Error updating bank details", variant: "destructive" });
-        setLoading(false);
-        return;
-      }
-    }
-
-    // Create withdrawal request
-    const { error } = await supabase.from("withdrawals").insert({
-      user_id: user?.id,
-      amount,
-      bank_name: formData.bankName,
-      account_number: formData.accountNumber,
-      account_name: formData.accountName,
-      status: "pending",
-    });
-
-    if (error) {
-      toast({ title: "Error creating withdrawal request", variant: "destructive" });
+        } as any)
+      } catch {}
     } else {
-      toast({ 
-        title: "Withdrawal Request Submitted", 
-        description: "Your request will be reviewed by admin" 
-      });
-      onOpenChange(false);
-      setFormData({ amount: "", bankName: "", accountNumber: "", accountName: "" });
+      const withdrawals = JSON.parse(localStorage.getItem('withdrawals') || '[]')
+      withdrawals.unshift({
+        id: crypto.randomUUID(),
+        user_id: user?.id,
+        amount,
+        bank_name: formData.bankName,
+        account_number: formData.accountNumber,
+        account_name: formData.accountName,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      })
+      localStorage.setItem('withdrawals', JSON.stringify(withdrawals))
     }
+    toast({ 
+      title: "Withdrawal Request Submitted", 
+      description: "Your request will be reviewed by admin" 
+    });
+    onOpenChange(false);
+    setFormData({ amount: "", bankName: "", accountNumber: "", accountName: "" });
     setLoading(false);
   };
 

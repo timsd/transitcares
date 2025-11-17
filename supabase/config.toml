@@ -1,7 +1,0 @@
-project_id = "cgkvrcsfvpknkemwerlh"
-
-[functions.send-notification]
-verify_jwt = false
-
-[functions.rate-limit]
-verify_jwt = false

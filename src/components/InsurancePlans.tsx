@@ -2,8 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Star, Zap, Crown } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "@/lib/navigation";
 
 const InsurancePlans = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
 const plans = [
     {
       name: "Bronze",
@@ -122,6 +126,16 @@ const plans = [
                     variant={plan.variant}
                     size="lg" 
                     className="w-full"
+                    onClick={() => {
+                      if (user) {
+                        const key = 'profile:' + user.id
+                        const prof = JSON.parse(localStorage.getItem(key) || '{}')
+                        localStorage.setItem(key, JSON.stringify({ ...prof, plan_tier: plan.variant }))
+                        navigate('/registration')
+                      } else {
+                        navigate('/auth')
+                      }
+                    }}
                   >
                     Select {plan.name} Plan
                   </Button>

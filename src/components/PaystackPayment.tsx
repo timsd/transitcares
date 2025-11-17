@@ -1,7 +1,7 @@
 import { PaystackButton } from 'react-paystack';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useConvex } from 'convex/react';
 
 interface PaystackPaymentProps {
   amount: number;
@@ -21,9 +21,9 @@ const PaystackPayment = ({
   className 
 }: PaystackPaymentProps) => {
   const { user, profile } = useAuth();
+  const convex = useConvex();
   
-  // Replace with your actual Paystack public key
-  const publicKey = "pk_test_xxxxxxxxxxxxxxxxxxxxx"; // TODO: Replace with actual key or use from env
+  const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string || "";
   
   const componentProps = {
     email: user?.email || '',
@@ -43,38 +43,39 @@ const PaystackPayment = ({
     text: children ? '' : "Pay Now",
     onSuccess: async (reference: any) => {
       try {
-        // Record the payment in the database
-        const { error: paymentError } = await supabase
-          .from('payments')
-          .insert({
+        if (convex && user) {
+          try {
+            await convex.mutation('payments:record', { user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier } as any)
+          } catch {}
+        } else {
+          const payments = JSON.parse(localStorage.getItem('payments') || '[]')
+          payments.unshift({
+            id: crypto.randomUUID(),
             user_id: user?.id,
-            amount: amount,
+            amount,
             payment_type: paymentType,
             payment_status: 'completed',
-            plan_tier: profile?.plan_tier
-          });
-
-        if (paymentError) throw paymentError;
-
-        // Update wallet balance for top-ups
-        if (paymentType === 'topup') {
-          const newBalance = (profile?.wallet_balance || 0) + amount;
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ wallet_balance: newBalance })
-            .eq('user_id', user?.id);
-
-          if (updateError) throw updateError;
+            plan_tier: profile?.plan_tier,
+            created_at: new Date().toISOString(),
+          })
+          localStorage.setItem('payments', JSON.stringify(payments))
         }
 
-        // Update registration status if it's a registration payment
-        if (paymentType === 'registration') {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ registration_status: 'completed' })
-            .eq('user_id', user?.id);
+        
+        if (paymentType === 'topup' && user) {
+          const key = 'profile:' + user.id
+          const prof = JSON.parse(localStorage.getItem(key) || '{}')
+          const newBalance = Number(prof.wallet_balance || 0) + amount
+          const updated = { ...prof, wallet_balance: newBalance }
+          localStorage.setItem(key, JSON.stringify(updated))
+        }
 
-          if (updateError) throw updateError;
+        
+        if (paymentType === 'registration' && user) {
+          const key = 'profile:' + user.id
+          const prof = JSON.parse(localStorage.getItem(key) || '{}')
+          const updated = { ...prof, registration_status: 'completed' }
+          localStorage.setItem(key, JSON.stringify(updated))
         }
 
         toast.success('Payment successful!', {

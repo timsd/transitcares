@@ -12,7 +12,7 @@ import {
   Clock,
   Users
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 import logoImage from "@/assets/transitcares-logo.jpg";
 
 const Footer = () => {

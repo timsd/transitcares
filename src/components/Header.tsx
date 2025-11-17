@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/navigation";
 import MobileMenu from "./MobileMenu";
 import logoImage from "@/assets/transitcares-logo.jpg";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   const handleAuthAction = () => {
@@ -22,7 +22,8 @@ const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3">
+          <button className="flex items-center gap-3" onClick={() => navigate('/')}
+            aria-label="Go to home">
             <img src={logoImage} alt="TransitCares Logo" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="font-montserrat font-bold text-xl">
@@ -31,25 +32,30 @@ const Header = () => {
               </h1>
               <p className="text-xs text-muted-foreground">Vehicle Repairs Insurance</p>
             </div>
-          </div>
+          </button>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#dashboard" className="text-foreground hover:text-primary transition-colors">
+            <button className="text-foreground hover:text-primary transition-colors"
+              onClick={() => { navigate('/'); setTimeout(() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
               Dashboard
-            </a>
-            <a href="#plans" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button className="text-foreground hover:text-primary transition-colors"
+              onClick={() => { navigate('/'); setTimeout(() => document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
               Plans
-            </a>
-            <a href="#claims" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button className="text-foreground hover:text-primary transition-colors"
+              onClick={() => { navigate('/'); setTimeout(() => document.getElementById('claims')?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
               Claims
-            </a>
-            <a href="/mechanics" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button className="text-foreground hover:text-primary transition-colors"
+              onClick={() => navigate('/mechanics')}>
               Mechanics
-            </a>
-            <a href="#support" className="text-foreground hover:text-primary transition-colors">
+            </button>
+            <button className="text-foreground hover:text-primary transition-colors"
+              onClick={() => { navigate('/'); setTimeout(() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' }), 100); }}>
               Support
-            </a>
+            </button>
           </nav>
 
           {/* User Actions */}
@@ -64,6 +70,16 @@ const Header = () => {
               >
                 <User className="h-4 w-4 mr-2" />
                 Profile
+              </Button>
+            )}
+            {isAdmin && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden md:flex"
+                onClick={() => navigate("/admin")}
+              >
+                Admin
               </Button>
             )}
             <Button variant="transport" size="sm" onClick={handleAuthAction} className="hidden md:flex">
