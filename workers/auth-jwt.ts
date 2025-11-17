@@ -17,8 +17,6 @@ async function signHS256(payload: any, secret: string) {
 export default {
   async fetch(request: Request, env: any) {
     const url = new URL(request.url)
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '')
-    if (!env.API_TOKEN || token !== env.API_TOKEN) return new Response('Unauthorized', { status: 401 })
 
     if (request.method === 'POST' && url.pathname === '/auth/login') {
       const { email, password } = await request.json()

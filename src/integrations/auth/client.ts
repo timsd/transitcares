@@ -41,7 +41,7 @@ export const authClient = {
     const url = (import.meta.env.VITE_R2_WORKER_URL as string || '') + '/auth/login'
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_R2_API_TOKEN || ''}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
     if (!res.ok) throw new Error('Login failed')
@@ -52,7 +52,7 @@ export const authClient = {
     const url = (import.meta.env.VITE_R2_WORKER_URL as string || '') + '/auth/signup'
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_R2_API_TOKEN || ''}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, full_name }),
     })
     if (!res.ok) throw new Error('Signup failed')

@@ -52,7 +52,7 @@ Use this as a checklist to connect our app to each service. Fill in the environm
 1. Connect repository `timsd/transitcares` on Netlify
 2. Site settings → Environment variables, add:
    - `VITE_CONVEX_URL`
-   - `VITE_R2_WORKER_URL`, `VITE_R2_API_TOKEN`
+   - `VITE_R2_WORKER_URL`
    - `VITE_PAYSTACK_PUBLIC_KEY`
    - `VITE_SENTRY_DSN`
    - `CONVEX_DEPLOYMENT`, `CONVEX_DEPLOYMENT_KEY`
