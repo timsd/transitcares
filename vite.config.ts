@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
-    tanstackStart(),
+    tanstackStart({ target: 'netlify' }),
     react(),
   ].filter(Boolean),
   resolve: {
