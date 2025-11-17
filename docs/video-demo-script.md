@@ -51,14 +51,14 @@
 - Say: “Claims, withdrawals, and users list here with filters and actions. Approving a claim updates it in Convex.”
 
 ## 7) Uploads (Cloudflare R2)
-- Open `workers/r2-upload.ts:1–18`
-- Say: “This Worker accepts a file, stores it in R2, and returns a key. The app shows the key and links it to the claim.”
+- Open `workers/r2-upload.ts:1–60`
+- Say: “This Worker validates a user JWT and then accepts a PDF or image up to 10MB, stores it in R2, and returns a key.”
 - Open `wrangler.toml:4–10`
 - Say: “Here we bind R2 and set a token for security.”
 
 ## 8) Environment
 - Open `.env`
-- Say: “We set things like `VITE_CONVEX_URL`, the Worker URL and token, Paystack public key, and Sentry DSN.”
+- Say: “We set public URLs like `VITE_CONVEX_URL`, `VITE_R2_WORKER_URL`, Paystack public key, and Sentry DSN. We do not store secrets in the client.”
 
 ## 9) Deploy and Test
 - Say: “On Netlify, add the same environment variables. Build with `npm run build`. Test: login, update profile, top-up, upload invoice, submit claim, approve in admin.”
@@ -71,4 +71,3 @@
 - Sentry: see errors and performance
 - Netlify: quick hosting
 - CodeRabbit: better PR reviews
-

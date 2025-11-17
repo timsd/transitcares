@@ -96,9 +96,10 @@ const ClaimsCenter = () => {
                   try {
                     const form = new FormData()
                     form.append('file', file)
+                    const jwt = localStorage.getItem('auth_token') || ''
                     const res = await fetch((import.meta.env.VITE_R2_WORKER_URL as string || '') + '/upload', {
                       method: 'POST',
-                      headers: { 'Authorization': `Bearer ${import.meta.env.VITE_R2_API_TOKEN || ''}` },
+                      headers: { 'Authorization': `Bearer ${jwt}` },
                       body: form,
                     })
                     if (!res.ok) throw new Error('Upload failed')

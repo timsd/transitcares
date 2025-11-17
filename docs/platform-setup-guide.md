@@ -30,7 +30,7 @@ Use this as a checklist to connect our app to each service. Fill in the environm
 6. Deploy Workers from Cloudflare UI or run `wrangler deploy` locally
 7. In the app `.env`:
    - `VITE_R2_WORKER_URL="https://<your-worker>.workers.dev"`
-   - `VITE_R2_API_TOKEN="<same as API_TOKEN>"`
+   - Do NOT set a token in client env; uploads use the user JWT (Authorization: Bearer `<auth_token>`)
 
 ## 3) Convex (Data & Functions)
 ### What we use
@@ -41,6 +41,7 @@ Use this as a checklist to connect our app to each service. Fill in the environm
 2. In Netlify env, set:
    - `CONVEX_DEPLOYMENT=proficient-lynx-386`
    - `CONVEX_DEPLOYMENT_KEY=eyJ2MiI6ImQzY...`
+   - Optional: set `SECRETS_SCAN_OMIT_KEYS` to ignore public `VITE_*` URLs
 3. Local typed API (optional):
    - `npx convex dev --configure=existing --team timothy-3dd5f --project transitcares`
    - `npx convex codegen`
@@ -95,4 +96,3 @@ Use this as a checklist to connect our app to each service. Fill in the environm
 - Top-up via Paystack and record payment
 - Admin: list items, filter, approve claim, migrate local data
 - Verify Sentry receives events
-

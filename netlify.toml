@@ -2,6 +2,9 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "VITE_CONVEX_URL,VITE_FIRECRAWL_URL,VITE_R2_WORKER_URL,VITE_PAYSTACK_PUBLIC_KEY,VITE_SENTRY_DSN"
+
 [dev]
   command = "npm run dev"
   port = 5173
