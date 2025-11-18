@@ -19,9 +19,21 @@ async function verifyHS256(token: string, secret: string) {
 export default {
   async fetch(request: Request, env: any) {
     const url = new URL(request.url)
+    const origin = request.headers.get('Origin') || '*'
+    const allowedOrigin = (env.ALLOWED_ORIGIN as string) || origin
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': allowedOrigin,
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
+
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders })
+    }
+
     const bearer = request.headers.get('Authorization')?.replace('Bearer ', '')
     const payload = bearer ? await verifyHS256(bearer, env.AUTH_JWT_SECRET) : null
-    if (!payload) return new Response('Unauthorized', { status: 401 })
+    if (!payload) return new Response('Unauthorized', { status: 401, headers: corsHeaders })
 
     if (request.method === 'POST' && url.pathname === '/upload') {
       const formData = await request.formData()
@@ -34,9 +46,9 @@ export default {
       if (buf.byteLength > 10 * 1024 * 1024) return new Response('File too large', { status: 413 })
       const key = `${payload.sub || 'anon'}-${Date.now()}-${crypto.randomUUID()}-${file.name}`
       await env.R2_BUCKET.put(key, buf, { httpMetadata: { contentType: file.type } })
-      return new Response(JSON.stringify({ key }), { headers: { 'Content-Type': 'application/json' } })
+      return new Response(JSON.stringify({ key }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
     }
 
-    return new Response('Not found', { status: 404 })
+    return new Response('Not found', { status: 404, headers: corsHeaders })
   }
 }
