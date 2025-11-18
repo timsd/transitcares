@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useConvex } from "convex/react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SecuritySettings from "@/components/SecuritySettings";
@@ -20,6 +21,7 @@ const Profile = () => {
   const navigate = useNavigate();
   
   const [loading, setLoading] = useState(false);
+  const convex = useConvex();
   const [vehiclePhoto, setVehiclePhoto] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -68,8 +70,46 @@ const Profile = () => {
 
     setLoading(true);
     try {
+      const ProfileSchema = z.object({
+        full_name: z.string().min(2),
+        phone: z.string().min(7),
+        vehicle_type: z.string().min(3),
+        vehicle_id: z.string().min(3),
+        vehicle_color: z.string().min(3),
+        chassis_number: z.string().min(3),
+        designated_route: z.string().min(3),
+        plan_tier: z.enum(["bronze", "silver", "gold"]),
+      })
+      ProfileSchema.parse(formData)
+
+      let vehicle_photo_key: string | null = null
+      if (vehiclePhoto) {
+        try {
+          const jwt = localStorage.getItem('auth_token') || ''
+          const form = new FormData()
+          form.append('file', vehiclePhoto)
+          const res = await fetch((import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '') + '/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${jwt}` },
+            body: form,
+          })
+          if (res.ok) {
+            const data = await res.json()
+            vehicle_photo_key = data.key
+          }
+        } catch {}
+      }
+
+      const payload = { ...formData, user_id: user.id, vehicle_photo_key, registration_status: 'completed' }
+
+      if (convex) {
+        try {
+          await convex.mutation('profiles:upsert', { user_id: user.id, data: payload } as any)
+        } catch {}
+      }
+
       const key = 'profile:' + user.id
-      localStorage.setItem(key, JSON.stringify({ ...formData, user_id: user.id }))
+      localStorage.setItem(key, JSON.stringify(payload))
 
       toast.success("Profile updated successfully", {
         description: "Your vehicle information has been saved.",
