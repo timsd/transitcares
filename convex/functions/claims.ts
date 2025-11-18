@@ -1,7 +1,8 @@
-import { query, mutation } from "convex/server"
+import { query, mutation } from "./_generated/server"
+import { v } from "convex/values"
 
 export const list = query({
-  args: { user_id: "string?" },
+  args: { user_id: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const q = ctx.db.query("claims")
     if (args.user_id) return await q.withIndex("by_user", (x) => x.eq("user_id", args.user_id)).collect()
@@ -11,10 +12,10 @@ export const list = query({
 
 export const create = mutation({
   args: {
-    user_id: "string",
-    claim_type: "string",
-    claim_amount: "number",
-    description: "string",
+    user_id: v.string(),
+    claim_type: v.string(),
+    claim_amount: v.number(),
+    description: v.string(),
   },
   handler: async (ctx, args) => {
     const now = new Date().toISOString()
@@ -31,7 +32,7 @@ export const create = mutation({
 })
 
 export const updateStatus = mutation({
-  args: { id: "id", status: "string", notes: "string?" },
+  args: { id: v.id("claims"), status: v.string(), notes: v.optional(v.string()) },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, { claim_status: args.status, updated_at: new Date().toISOString() })
   },
