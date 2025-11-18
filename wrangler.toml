@@ -9,6 +9,8 @@ API_TOKEN = "Y9Pvv7FwV-2r6OCMQuyFAsTJ6VEbLKGOK8JymBsux_M"
 AUTH_JWT_SECRET = "MjnPedAf7Un6mznddPUh2itIvBsTzTkG9qrMgbYyZTYmm9CyucHC0VZDyWDVYWtOfusbHaYiyo9jobdGLfvd-g"
 ADMIN_EMAILS = "getfunedu@gmail.com"
 ALLOWED_ORIGIN = "*"
+ADMIN_PASSWORD = ""
+DEFAULT_USER_PASSWORD = ""
 
 [[r2_buckets]]
 binding = "R2_BUCKET"

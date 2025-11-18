@@ -32,10 +32,18 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/auth/login') {
       const { email, password } = await request.json()
-      if (!email || !password) return new Response('Bad request', { status: 400 })
-      const sub = btoa(email).slice(0, 12)
+      if (!email || !password) return new Response('Bad request', { status: 400, headers: corsHeaders })
       const adminEmails = (env.ADMIN_EMAILS || '').split(',').map((e: string) => e.trim())
-      const role = adminEmails.includes(email) ? 'admin' : 'user'
+      const isAdmin = adminEmails.includes(email)
+      if (isAdmin) {
+        const ok = !!env.ADMIN_PASSWORD && password === env.ADMIN_PASSWORD
+        if (!ok) return new Response('Unauthorized', { status: 401, headers: corsHeaders })
+      } else if (env.DEFAULT_USER_PASSWORD) {
+        const ok = password === env.DEFAULT_USER_PASSWORD
+        if (!ok) return new Response('Unauthorized', { status: 401, headers: corsHeaders })
+      }
+      const sub = btoa(email).slice(0, 12)
+      const role = isAdmin ? 'admin' : 'user'
       const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24
       const jwt = await signHS256({ sub, email, role, exp, iss: 'ajo-safe-ride' }, env.AUTH_JWT_SECRET)
       return new Response(JSON.stringify({ token: jwt }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
@@ -43,7 +51,7 @@ export default {
 
     if (request.method === 'POST' && url.pathname === '/auth/signup') {
       const { email, password, full_name } = await request.json()
-      if (!email || !password) return new Response('Bad request', { status: 400 })
+      if (!email || !password) return new Response('Bad request', { status: 400, headers: corsHeaders })
       const sub = btoa(email).slice(0, 12)
       const role = 'user'
       const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24

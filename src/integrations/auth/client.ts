@@ -38,7 +38,8 @@ export const authClient = {
     }
   },
   async signInWithPassword({ email, password }: { email: string; password: string }) {
-    const url = (import.meta.env.VITE_R2_WORKER_URL as string || '') + '/auth/login'
+    const base = (import.meta.env.VITE_R2_WORKER_URL as string || '')
+    const url = base.replace(/\/+$/, '') + '/auth/login'
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -49,7 +50,8 @@ export const authClient = {
     setToken(data.token)
   },
   async signUp({ email, password, full_name }: { email: string; password: string; full_name?: string }) {
-    const url = (import.meta.env.VITE_R2_WORKER_URL as string || '') + '/auth/signup'
+    const base = (import.meta.env.VITE_R2_WORKER_URL as string || '')
+    const url = base.replace(/\/+$/, '') + '/auth/signup'
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
