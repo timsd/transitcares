@@ -45,7 +45,7 @@ export default {
       const sub = btoa(email).slice(0, 12)
       const role = isAdmin ? 'admin' : 'user'
       const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24
-      const jwt = await signHS256({ sub, email, role, exp, iss: 'ajo-safe-ride' }, env.AUTH_JWT_SECRET)
+      const jwt = await signHS256({ sub, email, role, exp, iss: 'transitcares' }, env.AUTH_JWT_SECRET)
       return new Response(JSON.stringify({ token: jwt }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
     }
 
@@ -55,7 +55,7 @@ export default {
       const sub = btoa(email).slice(0, 12)
       const role = 'user'
       const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24
-      const jwt = await signHS256({ sub, email, role, exp, iss: 'ajo-safe-ride' }, env.AUTH_JWT_SECRET)
+      const jwt = await signHS256({ sub, email, role, exp, iss: 'transitcares' }, env.AUTH_JWT_SECRET)
       return new Response(JSON.stringify({ token: jwt }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
     }
 
