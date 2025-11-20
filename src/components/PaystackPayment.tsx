@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { useConvex } from 'convex/react';
+import { useMutation } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { api } from '../../convex/_generated/api';
 
 interface PaystackPaymentProps {
@@ -33,7 +34,7 @@ const PaystackPayment = ({
       })
     }
   }, [])
-  const convex = useConvex();
+  const recordPayment = useMutation(api.payments.record);
   
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string || "";
   
@@ -68,9 +69,9 @@ const PaystackPayment = ({
           }
         } catch {}
 
-        if (convex && user) {
+        if (user) {
           try {
-            await convex.mutation(api.payments.record, { user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
+            await recordPayment({ user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
           } catch {}
         } else {
           const payments = JSON.parse(localStorage.getItem('payments') || '[]')

@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "@/lib/navigation";
 import { toast } from "sonner";
-import { useConvex } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 const ClaimsCenter = () => {
@@ -23,27 +23,15 @@ const ClaimsCenter = () => {
   const [recentClaims, setRecentClaims] = useState<Array<any>>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [uploadedKey, setUploadedKey] = useState<string | null>(null)
-  const convex = useConvex()
+  const claimsList = useQuery(api.claims.list, { user_id: user?.id } as any) || []
+  const paymentsList = useQuery(api.payments.list, { user_id: user?.id } as any) || []
+  const createClaim = useMutation(api.claims.create)
   const [payments, setPayments] = useState<any[]>([])
 
   useEffect(() => {
-    const load = async () => {
-      if (convex && user) {
-        try {
-          const claims = await convex.query(api.claims.list, { user_id: user.id } as any)
-          setRecentClaims(claims as any)
-          try {
-            const pay = await convex.query('payments:list', { user_id: user.id } as any)
-            setPayments(Array.isArray(pay) ? pay : [])
-          } catch {}
-          return
-        } catch {}
-      }
-      const claims = JSON.parse(localStorage.getItem('claims') || '[]');
-      setRecentClaims(claims);
-    }
-    load()
-  }, [convex, user?.id]);
+    setRecentClaims(Array.isArray(claimsList) ? claimsList : [])
+    setPayments(Array.isArray(paymentsList) ? paymentsList : [])
+  }, [claimsList, paymentsList])
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
   const startOfWeek = useMemo(() => {
@@ -67,7 +55,7 @@ const ClaimsCenter = () => {
   }, [startOfPrevWeek])
   const selectedDays = (profile as any)?.payment_days || []
   const prevWeekSelectedPayments = useMemo(() => {
-    const list = payments.filter(p => p.payment_type === 'daily_premium')
+    const list = payments.filter((p: any) => p.payment_type === 'daily_premium')
     return list.filter(p => {
       const dt = new Date(p.created_at)
       const within = dt >= startOfPrevWeek && dt <= endOfPrevWeek
@@ -185,38 +173,14 @@ const ClaimsCenter = () => {
                   })
                   return
                 }
-                if (convex) {
-                  try {
-                    await convex.mutation(api.claims.create, {
-                      user_id: user.id,
-                      claim_type: 'Repair',
-                      claim_amount: 0,
-                      description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
-                    } as any)
-                    const claims = await convex.query(api.claims.list, { user_id: user.id } as any)
-                    setRecentClaims(claims as any)
-                    return
-                  } catch {}
-                }
-                const claims = JSON.parse(localStorage.getItem('claims') || '[]');
-                const claim = {
-                  id: 'CLM-' + Date.now(),
-                  created_at: new Date().toISOString(),
-                  claim_type: 'Repair',
-                  claim_amount: 0,
-                  claim_status: 'pending',
-                  description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
-                  user_id: user.id,
-                  profiles: {
-                    full_name: profile?.full_name || user.email,
-                    phone: profile?.phone || '',
-                    vehicle_id: profile?.vehicle_id || '',
-                  },
-                  invoice_key: uploadedKey || null,
-                };
-                claims.unshift(claim);
-                localStorage.setItem('claims', JSON.stringify(claims));
-                setRecentClaims(claims);
+                try {
+                  await createClaim({
+                    user_id: user.id,
+                    claim_type: 'Repair',
+                    claim_amount: 0,
+                    description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
+                  } as any)
+                } catch {}
               }}>
                 Submit Claim
               </Button>

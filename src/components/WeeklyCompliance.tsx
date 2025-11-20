@@ -7,13 +7,13 @@ import PaystackPayment from "./PaystackPayment";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { useConvex } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useEffect, useMemo, useState } from "react";
 
 const WeeklyCompliance = () => {
   const { user, profile } = useAuth();
-  const convex = useConvex();
+  const paymentsList = useQuery(api.payments.list, { user_id: user?.id } as any) || [];
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [autoPay, setAutoPay] = useState<boolean>(false);
   const [payments, setPayments] = useState<any[]>([]);
@@ -37,15 +37,8 @@ const WeeklyCompliance = () => {
   }, [profile]);
 
   useEffect(() => {
-    const run = async () => {
-      if (!convex || !user) return;
-      try {
-        const res = await convex.query(api.payments.list, { user_id: user.id } as any);
-        setPayments(Array.isArray(res) ? res : []);
-      } catch {}
-    };
-    run();
-  }, [convex, user]);
+    setPayments(Array.isArray(paymentsList) ? paymentsList : []);
+  }, [paymentsList]);
 
   const startOfWeek = useMemo(() => {
     const d = new Date();

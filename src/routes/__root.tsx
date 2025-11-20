@@ -42,13 +42,15 @@ function RootComponent() {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          {convexClient ? (
-            <ConvexProvider client={convexClient}>
+          <Sentry.ErrorBoundary>
+            {convexClient ? (
+              <ConvexProvider client={convexClient}>
+                <Outlet />
+              </ConvexProvider>
+            ) : (
               <Outlet />
-            </ConvexProvider>
-          ) : (
-            <Outlet />
-          )}
+            )}
+          </Sentry.ErrorBoundary>
         </TooltipProvider>
       </QueryClientProvider>
     </RootDocument>

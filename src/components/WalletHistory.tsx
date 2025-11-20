@@ -4,30 +4,14 @@ import { Download, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { useEffect, useMemo, useState } from "react";
-import { useConvex } from "convex/react";
+import { useEffect, useMemo } from "react";
+import { useQuery } from "convex/react";
 import { useAuth } from "@/hooks/useAuth";
 
 const WalletHistory = () => {
   const { user, profile } = useAuth();
-  const convex = useConvex();
-  const [payments, setPayments] = useState<any[]>([]);
-  const [withdrawals, setWithdrawals] = useState<any[]>([]);
-
-  useEffect(() => {
-    const run = async () => {
-      if (!convex || !user) return;
-      try {
-        const pay = await convex.query('payments:list', { user_id: user.id } as any);
-        setPayments(Array.isArray(pay) ? pay : []);
-      } catch {}
-      try {
-        const wd = await convex.query('withdrawals:list', { user_id: user.id } as any);
-        setWithdrawals(Array.isArray(wd) ? wd : []);
-      } catch {}
-    };
-    run();
-  }, [convex, user]);
+  const payments = useQuery(api.payments.list, { user_id: user?.id } as any) || [];
+  const withdrawals = useQuery(api.withdrawals.list, { user_id: user?.id } as any) || [];
 
   const transactions = useMemo(() => {
     const t1 = payments.map((p) => ({

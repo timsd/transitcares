@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, DollarSign, FileText, TrendingUp, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useConvex } from "convex/react";
+import { useQuery } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "../../convex/_generated/api";
 
@@ -47,25 +47,25 @@ const AdminSnapshot = () => {
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
-  const convex = useConvex();
+  const profilesList = useQuery(api.profiles.list, {} as any) || []
+  const paymentsList = useQuery(api.payments.list, {} as any) || []
+  const claimsList = useQuery(api.claims.list, {} as any) || []
+
   const fetchAdminData = async () => {
     try {
       setLoading(true);
       const currentMonth = new Date();
       currentMonth.setDate(1);
-      const profiles = convex ? await convex.query(api.profiles.list, {} as any) : []
-      const payments = convex ? await convex.query(api.payments.list, {} as any) : []
-      const claims = convex ? await convex.query(api.claims.list, {} as any) : []
-      const totalUsers = (profiles as any[]).length
-      const monthlyRevenue = (payments as any[]).filter((p) => new Date(p.created_at) >= currentMonth).reduce((sum, p: any) => sum + Number(p.amount || 0), 0)
-      const claimsProcessed = (claims as any[]).filter((c) => new Date(c.created_at) >= currentMonth && c.claim_status === 'approved').length
-      const distribution = (profiles as any[]).reduce((acc: any, prof: any) => {
+      const totalUsers = (profilesList as any[]).length
+      const monthlyRevenue = (paymentsList as any[]).filter((p) => new Date(p.created_at) >= currentMonth).reduce((sum, p: any) => sum + Number(p.amount || 0), 0)
+      const claimsProcessed = (claimsList as any[]).filter((c) => new Date(c.created_at) >= currentMonth && c.claim_status === 'approved').length
+      const distribution = (profilesList as any[]).reduce((acc: any, prof: any) => {
         const plan = prof.plan_tier || 'bronze'
         acc[plan] = (acc[plan] || 0) + 1
         return acc
       }, { bronze: 0, silver: 0, gold: 0 })
-      const recentPayments = (payments as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(5)
-      const recentClaims = (claims as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(5)
+      const recentPayments = (paymentsList as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(5)
+      const recentClaims = (claimsList as any[]).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(5)
       const activity: RecentActivity[] = [
         ...recentPayments.map((p: any) => ({ id: p._id || p.id, type: 'payment' as const, vehicle_id: `Payment-${(p._id || p.id).toString().slice(0, 8)}`, amount: Number(p.amount || 0), status: 'completed', created_at: p.created_at })),
         ...recentClaims.map((c: any) => ({ id: c._id || c.id, type: 'claim' as const, vehicle_id: `Claim-${(c._id || c.id).toString().slice(0, 8)}`, amount: Number(c.claim_amount || 0), status: c.claim_status, created_at: c.created_at }))
@@ -75,12 +75,11 @@ const AdminSnapshot = () => {
         totalUsers: totalUsers || 0,
         monthlyRevenue,
         claimsProcessed: claimsProcessed || 0,
-        growthRate: 23 // This could be calculated based on previous month data
+        growthRate: 23
       });
 
       setPlanDistribution(distribution);
       setRecentActivity(activity);
-
     } catch (error: any) {
       toast({
         title: "Error fetching admin data",
