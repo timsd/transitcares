@@ -16,6 +16,8 @@ import { useNavigate } from "@/lib/navigation";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import * as Sentry from '@sentry/react';
+const startTransaction = (Sentry as any).startTransaction?.bind(Sentry) || (() => ({ finish() {} }))
 
 const ClaimsCenter = () => {
   const { user, profile } = useAuth();
@@ -173,6 +175,7 @@ const ClaimsCenter = () => {
                   })
                   return
                 }
+                const tx = startTransaction({ name: 'claims:create', op: 'http' })
                 try {
                   await createClaim({
                     user_id: user.id,
@@ -180,7 +183,7 @@ const ClaimsCenter = () => {
                     claim_amount: 0,
                     description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
                   } as any)
-                } catch {}
+                } catch (e) { Sentry.captureException(e) } finally { tx.finish() }
               }}>
                 Submit Claim
               </Button>

@@ -16,6 +16,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SecuritySettings from "@/components/SecuritySettings";
 import { ArrowLeft, Upload, Camera } from "lucide-react";
+import { saveProfile } from "@/server/saveProfile";
 
 const Profile = () => {
   const { user, profile, signOut } = useAuth();
@@ -102,6 +103,12 @@ const Profile = () => {
       }
 
       const payload = { ...formData, user_id: user.id, vehicle_photo_key, registration_status: 'completed' }
+
+      try {
+        await saveProfile(payload)
+      } catch (e: any) {
+        throw new Error(e?.message || 'Server validation failed')
+      }
 
       if (convex) {
         try {

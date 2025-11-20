@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useMutation } from 'convex/react';
+import * as Sentry from '@sentry/react';
+const startTransaction = (Sentry as any).startTransaction?.bind(Sentry) || (() => ({ finish() {} }))
 import { api } from '../../convex/_generated/api';
 import { api } from '../../convex/_generated/api';
 
@@ -55,6 +57,7 @@ const PaystackPayment = ({
     publicKey,
     text: children ? '' : "Pay Now",
     onSuccess: async (reference: any) => {
+      const tx = startTransaction({ name: 'payment:onSuccess', op: 'payment', data: { paymentType } })
       try {
         let verified = false
         let ref = reference?.reference || reference?.trxref || ''
@@ -108,11 +111,11 @@ const PaystackPayment = ({
         
         if (onSuccess) onSuccess();
       } catch (error) {
-        console.error('Payment recording error:', error);
+        Sentry.captureException(error);
         toast.error('Payment verification failed', {
           description: 'Please contact support if amount was deducted.'
         });
-      }
+      } finally { tx.finish() }
     },
     onClose: () => {
       toast.info('Payment cancelled');
