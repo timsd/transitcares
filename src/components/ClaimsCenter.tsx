@@ -10,11 +10,12 @@ import {
   Plus,
   Eye
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "@/lib/navigation";
 import { toast } from "sonner";
 import { useConvex } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 const ClaimsCenter = () => {
   const { user, profile } = useAuth();
@@ -23,13 +24,18 @@ const ClaimsCenter = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [uploadedKey, setUploadedKey] = useState<string | null>(null)
   const convex = useConvex()
+  const [payments, setPayments] = useState<any[]>([])
 
   useEffect(() => {
     const load = async () => {
       if (convex && user) {
         try {
-          const claims = await convex.query('claims:list', { user_id: user.id } as any)
+          const claims = await convex.query(api.claims.list, { user_id: user.id } as any)
           setRecentClaims(claims as any)
+          try {
+            const pay = await convex.query('payments:list', { user_id: user.id } as any)
+            setPayments(Array.isArray(pay) ? pay : [])
+          } catch {}
           return
         } catch {}
       }
@@ -38,6 +44,39 @@ const ClaimsCenter = () => {
     }
     load()
   }, [convex, user?.id]);
+
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+  const startOfWeek = useMemo(() => {
+    const d = new Date()
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    const s = new Date(d.setDate(diff))
+    s.setHours(0,0,0,0)
+    return s
+  }, [])
+  const startOfPrevWeek = useMemo(() => {
+    const s = new Date(startOfWeek)
+    s.setDate(s.getDate() - 7)
+    return s
+  }, [startOfWeek])
+  const endOfPrevWeek = useMemo(() => {
+    const e = new Date(startOfPrevWeek)
+    e.setDate(e.getDate() + 6)
+    e.setHours(23,59,59,999)
+    return e
+  }, [startOfPrevWeek])
+  const selectedDays = (profile as any)?.payment_days || []
+  const prevWeekSelectedPayments = useMemo(() => {
+    const list = payments.filter(p => p.payment_type === 'daily_premium')
+    return list.filter(p => {
+      const dt = new Date(p.created_at)
+      const within = dt >= startOfPrevWeek && dt <= endOfPrevWeek
+      if (!within) return false
+      const dayName = daysOfWeek[dt.getDay() === 0 ? 6 : dt.getDay() - 1]
+      return selectedDays.includes(dayName)
+    }).length
+  }, [payments, selectedDays, startOfPrevWeek, endOfPrevWeek])
+  const penaltyActive = selectedDays.length > 0 && prevWeekSelectedPayments < 4
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -136,19 +175,25 @@ const ClaimsCenter = () => {
                 </div>
               </div>
 
-              <Button variant="transport" className="w-full" onClick={async () => {
+              <Button variant="transport" className="w-full" disabled={penaltyActive} onClick={async () => {
                 if (!user) return navigate('/auth');
                 const hasVehicle = !!(profile?.vehicle_type && profile?.vehicle_id);
                 if (!hasVehicle) return navigate('/profile');
+                if (penaltyActive) {
+                  toast.error('Claims temporarily disabled', {
+                    description: 'Complete 4 selected-day payments in a week to re-enable claims next cycle.'
+                  })
+                  return
+                }
                 if (convex) {
                   try {
-                    await convex.mutation('claims:create', {
+                    await convex.mutation(api.claims.create, {
                       user_id: user.id,
                       claim_type: 'Repair',
                       claim_amount: 0,
                       description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
                     } as any)
-                    const claims = await convex.query('claims:list', { user_id: user.id } as any)
+                    const claims = await convex.query(api.claims.list, { user_id: user.id } as any)
                     setRecentClaims(claims as any)
                     return
                   } catch {}

@@ -7,8 +7,8 @@ export function applyAuthFromLocal() {
   if (!convexClient) return
   const token = localStorage.getItem('auth_token')
   if (token) {
-    convexClient.setAuth(() => token)
+    convexClient.setAuth(async () => token)
   } else {
-    convexClient.setAuth(() => null as any)
+    convexClient.setAuth(async () => null as any)
   }
 }

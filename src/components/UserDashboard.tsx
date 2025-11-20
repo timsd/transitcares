@@ -24,10 +24,10 @@ const UserDashboard = () => {
   useDeviceFingerprint(user?.id);
 
   useEffect(() => {
-    const tier = profile?.plan_tier
-    if (tier === 'gold') setDailyPremium(4000)
-    else if (tier === 'silver') setDailyPremium(2500)
-    else if (tier === 'bronze') setDailyPremium(1500)
+    const tier = profile?.plan_tier?.toLowerCase()
+    if (tier === 'gold') setDailyPremium(500)
+    else if (tier === 'silver') setDailyPremium(350)
+    else if (tier === 'bronze') setDailyPremium(200)
     else setDailyPremium(null)
   }, [profile?.plan_tier])
 

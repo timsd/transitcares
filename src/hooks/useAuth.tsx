@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
 import { authClient } from "@/integrations/auth/client";
 import { applyAuthFromLocal } from "@/integrations/convex/client";
+import { ProfileModel } from "@/types/models";
 
-interface Profile {
-  user_id: string;
-  full_name?: string | null;
-  phone?: string | null;
-  vehicle_type?: string | null;
-  vehicle_id?: string | null;
-  plan_tier?: string;
-  wallet_balance?: number;
-  registration_status?: string;
+type Profile = ProfileModel & {
   last_login_ip?: string | null;
   last_login_at?: string | null;
   trusted_devices?: any;
@@ -19,9 +12,6 @@ interface Profile {
   bank_name?: string | null;
   account_number?: string | null;
   account_name?: string | null;
-  vehicle_color?: string | null;
-  chassis_number?: string | null;
-  designated_route?: string | null;
 }
 
 export const useAuth = () => {

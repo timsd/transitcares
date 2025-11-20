@@ -4,50 +4,51 @@ import { Download, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useEffect, useMemo, useState } from "react";
+import { useConvex } from "convex/react";
+import { useAuth } from "@/hooks/useAuth";
 
 const WalletHistory = () => {
-  const transactions = [
-    {
-      id: 1,
-      type: "deposit",
-      amount: 5000,
-      description: "Wallet Top-up",
-      date: "2025-01-28",
-      status: "completed"
-    },
-    {
-      id: 2,
-      type: "payment",
-      amount: -200,
-      description: "Daily Premium - Bronze",
-      date: "2025-01-28",
-      status: "completed"
-    },
-    {
-      id: 3,
-      type: "payment",
-      amount: -200,
-      description: "Daily Premium - Bronze",
-      date: "2025-01-27",
-      status: "completed"
-    },
-    {
-      id: 4,
-      type: "deposit",
-      amount: 3000,
-      description: "Wallet Top-up",
-      date: "2025-01-25",
-      status: "completed"
-    },
-    {
-      id: 5,
-      type: "payment",
-      amount: -200,
-      description: "Daily Premium - Bronze",
-      date: "2025-01-25",
-      status: "completed"
-    }
-  ];
+  const { user, profile } = useAuth();
+  const convex = useConvex();
+  const [payments, setPayments] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!convex || !user) return;
+      try {
+        const pay = await convex.query('payments:list', { user_id: user.id } as any);
+        setPayments(Array.isArray(pay) ? pay : []);
+      } catch {}
+      try {
+        const wd = await convex.query('withdrawals:list', { user_id: user.id } as any);
+        setWithdrawals(Array.isArray(wd) ? wd : []);
+      } catch {}
+    };
+    run();
+  }, [convex, user]);
+
+  const transactions = useMemo(() => {
+    const t1 = payments.map((p) => ({
+      id: p._id || p.id,
+      type: p.payment_type === 'topup' ? 'deposit' : 'payment',
+      amount: p.payment_type === 'topup' ? p.amount : -Math.abs(p.amount),
+      description: p.payment_type === 'daily_premium' ? `Daily Premium - ${(profile?.plan_tier || '').toUpperCase()}` : p.payment_type === 'registration' ? 'Registration Fee' : 'Wallet Top-up',
+      date: p.created_at,
+      status: 'completed'
+    }));
+    const t2 = withdrawals.map((w) => ({
+      id: w._id || w.id,
+      type: 'payment',
+      amount: -Math.abs(w.amount),
+      description: `Withdrawal - ${w.bank_name}`,
+      date: w.created_at,
+      status: w.status || 'completed'
+    }));
+    const all = [...t1, ...t2].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return all;
+  }, [payments, withdrawals, profile?.plan_tier]);
 
   const exportToPDF = () => {
     const doc = new jsPDF();

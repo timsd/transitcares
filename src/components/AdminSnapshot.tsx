@@ -6,6 +6,7 @@ import { Users, DollarSign, FileText, TrendingUp, RefreshCw } from "lucide-react
 import { useAuth } from "@/hooks/useAuth";
 import { useConvex } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
+import { api } from "../../convex/_generated/api";
 
 interface AdminStats {
   totalUsers: number;
@@ -52,9 +53,9 @@ const AdminSnapshot = () => {
       setLoading(true);
       const currentMonth = new Date();
       currentMonth.setDate(1);
-      const profiles = convex ? await convex.query('profiles:list', {} as any) : []
-      const payments = convex ? await convex.query('payments:list', {} as any) : []
-      const claims = convex ? await convex.query('claims:list', {} as any) : []
+      const profiles = convex ? await convex.query(api.profiles.list, {} as any) : []
+      const payments = convex ? await convex.query(api.payments.list, {} as any) : []
+      const claims = convex ? await convex.query(api.claims.list, {} as any) : []
       const totalUsers = (profiles as any[]).length
       const monthlyRevenue = (payments as any[]).filter((p) => new Date(p.created_at) >= currentMonth).reduce((sum, p: any) => sum + Number(p.amount || 0), 0)
       const claimsProcessed = (claims as any[]).filter((c) => new Date(c.created_at) >= currentMonth && c.claim_status === 'approved').length

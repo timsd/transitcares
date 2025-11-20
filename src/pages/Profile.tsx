@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useConvex } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SecuritySettings from "@/components/SecuritySettings";
@@ -31,7 +32,7 @@ const Profile = () => {
     vehicle_color: '',
     chassis_number: '',
     designated_route: '',
-    plan_tier: 'bronze'
+    plan_tier: ''
   });
 
   useEffect(() => {
@@ -49,7 +50,7 @@ const Profile = () => {
         vehicle_color: (profile as any).vehicle_color || '',
         chassis_number: (profile as any).chassis_number || '',
         designated_route: (profile as any).designated_route || '',
-        plan_tier: profile.plan_tier || 'bronze'
+        plan_tier: profile.plan_tier || ''
       });
     }
   }, [user, profile, navigate]);
@@ -104,7 +105,7 @@ const Profile = () => {
 
       if (convex) {
         try {
-          await convex.mutation('profiles:upsert', { user_id: user.id, data: payload } as any)
+          await convex.mutation(api.profiles.upsert, { user_id: user.id, data: payload } as any)
         } catch {}
       }
 
@@ -273,7 +274,7 @@ const Profile = () => {
                         onValueChange={(value) => handleInputChange('plan_tier', value)}
                       >
                         <SelectTrigger>
-                          <SelectValue />
+                          <SelectValue placeholder="Select a plan" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="bronze">Bronze Plan</SelectItem>

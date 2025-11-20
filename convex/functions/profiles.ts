@@ -25,6 +25,8 @@ export const upsert = mutation({
       chassis_number: v.optional(v.string()),
       designated_route: v.optional(v.string()),
       vehicle_photo_key: v.optional(v.string()),
+      payment_days: v.optional(v.array(v.string())),
+      auto_payment_enabled: v.optional(v.boolean()),
     }),
   },
   handler: async (ctx, args) => {

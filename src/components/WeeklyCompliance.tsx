@@ -4,11 +4,21 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import PaystackPayment from "./PaystackPayment";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { useConvex } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useEffect, useMemo, useState } from "react";
 
 const WeeklyCompliance = () => {
-  const { profile } = useAuth();
-  
-  // Get daily premium based on plan tier
+  const { user, profile } = useAuth();
+  const convex = useConvex();
+  const [selectedDays, setSelectedDays] = useState<string[]>([]);
+  const [autoPay, setAutoPay] = useState<boolean>(false);
+  const [payments, setPayments] = useState<any[]>([]);
+  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
   const getPlanAmount = (tier: string | null | undefined) => {
     switch(tier?.toLowerCase()) {
       case 'bronze': return 200;
@@ -17,26 +27,79 @@ const WeeklyCompliance = () => {
       default: return 200;
     }
   };
-  
+
   const dailyPremium = getPlanAmount(profile?.plan_tier);
   const registrationFee = 5000;
-  const weekData = [
-    { day: "Monday", paid: true, amount: dailyPremium, date: "Jan 27" },
-    { day: "Tuesday", paid: true, amount: dailyPremium, date: "Jan 28" },
-    { day: "Wednesday", paid: true, amount: dailyPremium, date: "Jan 29" },
-    { day: "Thursday", paid: false, amount: dailyPremium, date: "Jan 30" },
-    { day: "Friday", paid: false, amount: dailyPremium, date: "Jan 31" },
-    { day: "Saturday", paid: false, amount: dailyPremium, date: "Feb 1" },
-    { day: "Sunday", paid: false, amount: dailyPremium, date: "Feb 2" }
-  ];
 
-  const paidDays = weekData.filter(d => d.paid).length;
-  const remainingDays = 7 - paidDays;
-  const totalWeeklyAmount = dailyPremium * 7;
-  const paidAmount = paidDays * dailyPremium;
-  const progressPercentage = (paidDays / 7) * 100;
-  const daysUntilEligible = Math.max(0, 4 - paidDays); // Changed to 4 consecutive days
+  useEffect(() => {
+    setSelectedDays((profile as any)?.payment_days || []);
+    setAutoPay(Boolean((profile as any)?.auto_payment_enabled));
+  }, [profile]);
+
+  useEffect(() => {
+    const run = async () => {
+      if (!convex || !user) return;
+      try {
+        const res = await convex.query(api.payments.list, { user_id: user.id } as any);
+        setPayments(Array.isArray(res) ? res : []);
+      } catch {}
+    };
+    run();
+  }, [convex, user]);
+
+  const startOfWeek = useMemo(() => {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const s = new Date(d.setDate(diff));
+    s.setHours(0,0,0,0);
+    return s;
+  }, []);
+
+  const weekDates = useMemo(() => {
+    const list: { day: string; date: Date }[] = [];
+    for (let i = 0; i < 7; i++) {
+      const dt = new Date(startOfWeek);
+      dt.setDate(startOfWeek.getDate() + i);
+      list.push({ day: daysOfWeek[i], date: dt });
+    }
+    return list;
+  }, [startOfWeek]);
+
+  const paidSelectedDays = useMemo(() => {
+    const thisWeekPayments = payments.filter(p => p.payment_type === 'daily_premium');
+    return weekDates.filter(({ day, date }) => {
+      if (!selectedDays.includes(day)) return false;
+      const isoDate = date.toISOString().slice(0,10);
+      return thisWeekPayments.some(p => String(p.created_at).slice(0,10) === isoDate);
+    }).length;
+  }, [payments, weekDates, selectedDays]);
+
+  const remainingDays = Math.max(0, Math.min(4, selectedDays.length) - paidSelectedDays);
+  const totalSelectedAmount = dailyPremium * Math.min(4, selectedDays.length || 4);
+  const paidAmount = paidSelectedDays * dailyPremium;
+  const progressPercentage = selectedDays.length ? (paidSelectedDays / Math.min(4, selectedDays.length)) * 100 : 0;
+  const eligible = paidSelectedDays >= 4;
   const hasRegistrationFee = profile?.registration_status !== 'completed';
+
+  const toggleDay = (day: string) => {
+    const exists = selectedDays.includes(day);
+    if (exists) setSelectedDays(selectedDays.filter(d => d !== day));
+    else if (selectedDays.length < 4) setSelectedDays([...selectedDays, day]);
+  };
+
+  const savePreferences = async () => {
+    if (!user) return;
+    const data: any = { payment_days: selectedDays, auto_payment_enabled: autoPay };
+    try {
+      if (convex) {
+        await convex.mutation(api.profiles.upsert, { user_id: user.id, data } as any);
+      }
+      const key = 'profile:' + user.id;
+      const prof = JSON.parse(localStorage.getItem(key) || '{}');
+      localStorage.setItem(key, JSON.stringify({ ...prof, ...data }));
+    } catch {}
+  };
 
   return (
     <Card className="bg-card border-border">
@@ -52,8 +115,8 @@ const WeeklyCompliance = () => {
             </p>
           </div>
           <div className="flex flex-col gap-2 items-end">
-            <Badge variant={daysUntilEligible === 0 ? "default" : "outline"}>
-              {daysUntilEligible === 0 ? "Claim Eligible" : `${daysUntilEligible} days to eligibility`}
+            <Badge variant={eligible ? "default" : "outline"}>
+              {eligible ? "Claim Eligible" : `${remainingDays} days to eligibility`}
             </Badge>
             {hasRegistrationFee && (
               <Badge variant="secondary" className="text-xs">
@@ -64,59 +127,80 @@ const WeeklyCompliance = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">Select up to 4 payment days</p>
+          <div className="flex flex-wrap gap-3">
+            {daysOfWeek.map((day) => (
+              <label key={day} className="flex items-center gap-2">
+                <Checkbox checked={selectedDays.includes(day)} onCheckedChange={() => toggleDay(day)} />
+                <span className="text-sm">{day}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Switch checked={autoPay} onCheckedChange={setAutoPay} />
+              <span className="text-sm">Automate daily payments</span>
+            </div>
+            <Button size="sm" onClick={savePreferences}>Save Preferences</Button>
+          </div>
+        </div>
         {/* Progress Overview */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Weekly Progress</span>
-            <span className="font-medium text-foreground">{paidDays} of 7 days</span>
+            <span className="font-medium text-foreground">{paidSelectedDays} of {Math.min(4, selectedDays.length || 4)} days</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>₦{paidAmount.toLocaleString()} paid</span>
-            <span>₦{totalWeeklyAmount.toLocaleString()} total</span>
+            <span>₦{totalSelectedAmount.toLocaleString()} total</span>
           </div>
         </div>
 
         {/* Daily Breakdown */}
-        <div className="space-y-2">
-          <h4 className="font-medium text-foreground text-sm">Daily Breakdown</h4>
           <div className="space-y-2">
-            {weekData.map((day, index) => (
-              <div 
-                key={index}
-                className={`flex items-center justify-between p-3 rounded-lg border ${
-                  day.paid 
-                    ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900" 
-                    : "bg-muted/50 border-border"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {day.paid ? (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  ) : (
-                    index === paidDays ? (
-                      <Clock className="h-5 w-5 text-yellow-500" />
-                    ) : (
-                      <XCircle className="h-5 w-5 text-muted-foreground" />
-                    )
-                  )}
-                  <div>
-                    <p className="font-medium text-foreground text-sm">{day.day}</p>
-                    <p className="text-xs text-muted-foreground">{day.date}</p>
+            <h4 className="font-medium text-foreground text-sm">Daily Breakdown</h4>
+            <div className="space-y-2">
+              {weekDates.map(({ day, date }, index) => {
+                const requires = selectedDays.includes(day);
+                const isoDate = date.toISOString().slice(0,10);
+                const paid = payments.some(p => p.payment_type === 'daily_premium' && String(p.created_at).slice(0,10) === isoDate);
+                return (
+                  <div 
+                    key={day}
+                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                      paid 
+                        ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900" 
+                        : requires ? "bg-muted/50 border-border" : "bg-muted/30 border-border"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {paid ? (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      ) : requires && index === new Date().getDay() - 1 ? (
+                        <Clock className="h-5 w-5 text-yellow-500" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <div>
+                        <p className="font-medium text-foreground text-sm">{day}</p>
+                        <p className="text-xs text-muted-foreground">{date.toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-semibold ${paid ? "text-green-600" : requires ? "text-muted-foreground" : "text-muted-foreground"}`}>
+                        ₦{dailyPremium.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {paid ? "Paid" : requires ? (date.toDateString() === new Date().toDateString() ? "Due Today" : "Pending") : "Not Selected"}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className={`font-semibold ${day.paid ? "text-green-600" : "text-muted-foreground"}`}>
-                    ₦{day.amount.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {day.paid ? "Paid" : index === paidDays ? "Due Today" : "Pending"}
-                  </p>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
-        </div>
 
         {/* Action Button */}
         <div className="pt-4 border-t border-border">
@@ -170,12 +254,10 @@ const WeeklyCompliance = () => {
           <h4 className="font-medium text-foreground text-sm mb-2">Important Information</h4>
           <ul className="text-xs text-muted-foreground space-y-1">
             <li>• One-time registration fee: ₦{registrationFee.toLocaleString()} (required before daily payments)</li>
-            <li>• Maintain 4 consecutive days of payment to be eligible for claims</li>
-            <li>• You can choose which days to pay, but they must be consecutive</li>
+            <li>• Select any 4 days per week and complete payments to be eligible for claims</li>
             <li>• Daily premium varies by plan: Bronze (₦200), Silver (₦350), Gold (₦500)</li>
-            <li>• Missing a payment resets your eligibility counter</li>
-            <li>• Premium must be paid before 11:59 PM each day</li>
-            <li>• Claims can be filed anytime after achieving 4 consecutive days eligibility</li>
+            <li>• Premium should be paid before 11:59 PM on selected days</li>
+            <li>• Claim eligibility is reached when 4 selected-day payments are completed within the week</li>
           </ul>
         </div>
       </CardContent>

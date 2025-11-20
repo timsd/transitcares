@@ -22,7 +22,7 @@ export default {
 
     const corsHeaders = {
       'Access-Control-Allow-Origin': allowedOrigin,
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }
 
@@ -57,6 +57,21 @@ export default {
       const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24
       const jwt = await signHS256({ sub, email, role, exp, iss: 'transitcares' }, env.AUTH_JWT_SECRET)
       return new Response(JSON.stringify({ token: jwt }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+    }
+
+    if (request.method === 'GET' && url.pathname === '/paystack/verify') {
+      const reference = url.searchParams.get('reference')
+      if (!reference) return new Response(JSON.stringify({ status: 'error', message: 'Missing reference' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+      try {
+        const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`, {
+          headers: { 'Authorization': `Bearer ${env.PAYSTACK_SECRET_KEY}` },
+        })
+        const body = await res.json()
+        const status = body?.data?.status === 'success' ? 'success' : 'failed'
+        return new Response(JSON.stringify({ status, data: body?.data || null }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+      } catch (e: any) {
+        return new Response(JSON.stringify({ status: 'error', message: e?.message || 'verify failed' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+      }
     }
 
     return new Response('Not found', { status: 404, headers: corsHeaders })

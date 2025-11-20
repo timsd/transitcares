@@ -1,5 +1,5 @@
 export default {
-  async fetch(request, env) {
+  async fetch(request: Request, env: { FIRECRAWL_URL: string; FIRECRAWL_API_KEY: string }) {
     const url = new URL(request.url)
     if (url.pathname !== '/crawl') {
       return new Response('Not Found', { status: 404 })

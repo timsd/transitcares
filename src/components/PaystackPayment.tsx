@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useConvex } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 
 interface PaystackPaymentProps {
   amount: number;
@@ -54,9 +55,22 @@ const PaystackPayment = ({
     text: children ? '' : "Pay Now",
     onSuccess: async (reference: any) => {
       try {
+        let verified = false
+        let ref = reference?.reference || reference?.trxref || ''
+        try {
+          const verifyBase = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
+          if (verifyBase && ref) {
+            const res = await fetch(`${verifyBase}/paystack/verify?reference=${encodeURIComponent(ref)}`)
+            if (res.ok) {
+              const data = await res.json()
+              verified = data?.status === 'success'
+            }
+          }
+        } catch {}
+
         if (convex && user) {
           try {
-            await convex.mutation('payments:record', { user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier } as any)
+            await convex.mutation(api.payments.record, { user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
           } catch {}
         } else {
           const payments = JSON.parse(localStorage.getItem('payments') || '[]')
@@ -65,7 +79,8 @@ const PaystackPayment = ({
             user_id: user?.id,
             amount,
             payment_type: paymentType,
-            payment_status: 'completed',
+            payment_status: verified ? 'verified' : 'pending',
+            reference: ref,
             plan_tier: profile?.plan_tier,
             created_at: new Date().toISOString(),
           })

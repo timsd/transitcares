@@ -5,7 +5,7 @@ export const list = query({
   args: { user_id: v.optional(v.string()) },
   handler: async (ctx, args) => {
     const q = ctx.db.query("claims")
-    if (args.user_id) return await q.withIndex("by_user", (x) => x.eq("user_id", args.user_id)).collect()
+    if (args.user_id) return await q.withIndex("by_user", (x) => x.eq("user_id", args.user_id as string)).collect()
     return await q.collect()
   },
 })
