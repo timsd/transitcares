@@ -4,8 +4,13 @@ import { v } from "convex/values"
 export const list = query({
   args: { user_id: v.optional(v.string()) },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthorized')
     const q = ctx.db.query("claims")
-    if (args.user_id) return await q.withIndex("by_user", (x) => x.eq("user_id", args.user_id as string)).collect()
+    if (args.user_id) {
+      if (args.user_id !== identity.subject) throw new Error('Forbidden')
+      return await q.withIndex("by_user", (x) => x.eq("user_id", args.user_id as string)).collect()
+    }
     return await q.collect()
   },
 })
@@ -18,6 +23,9 @@ export const create = mutation({
     description: v.string(),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthorized')
+    if (identity.subject !== args.user_id) throw new Error('Forbidden')
     const now = new Date().toISOString()
     return await ctx.db.insert("claims", {
       user_id: args.user_id,

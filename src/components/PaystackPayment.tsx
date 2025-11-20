@@ -90,19 +90,16 @@ const PaystackPayment = ({
 
         
         if (paymentType === 'topup' && user) {
-          const key = 'profile:' + user.id
-          const prof = JSON.parse(localStorage.getItem(key) || '{}')
-          const newBalance = Number(prof.wallet_balance || 0) + amount
-          const updated = { ...prof, wallet_balance: newBalance }
-          localStorage.setItem(key, JSON.stringify(updated))
+          try {
+            await recordPayment({ user_id: user.id, amount, payment_type: 'topup', plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
+          } catch {}
         }
 
         
         if (paymentType === 'registration' && user) {
-          const key = 'profile:' + user.id
-          const prof = JSON.parse(localStorage.getItem(key) || '{}')
-          const updated = { ...prof, registration_status: 'completed' }
-          localStorage.setItem(key, JSON.stringify(updated))
+          try {
+            await recordPayment({ user_id: user.id, amount, payment_type: 'registration', plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
+          } catch {}
         }
 
         toast.success('Payment successful!', {

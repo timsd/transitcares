@@ -4,6 +4,9 @@ import { v } from "convex/values"
 export const get = query({
   args: { user_id: v.string() },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthorized')
+    if (identity.subject !== args.user_id) throw new Error('Forbidden')
     return await ctx.db
       .query("profiles")
       .withIndex("by_user", (q) => q.eq("user_id", args.user_id))
@@ -30,6 +33,9 @@ export const upsert = mutation({
     }),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity) throw new Error('Unauthorized')
+    if (identity.subject !== args.user_id) throw new Error('Forbidden')
     const existing = await ctx.db
       .query("profiles")
       .withIndex("by_user", (q) => q.eq("user_id", args.user_id))
