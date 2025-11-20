@@ -6,6 +6,10 @@ checks:
     - readability
     - security
     - maintainability
+ignore_paths:
+  - node_modules/**
+  - convex/_generated/**
+  - .analysis_snapshot/**
 notifications:
   pull_requests: true
   commits: false
