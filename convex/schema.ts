@@ -44,4 +44,11 @@ export default defineSchema({
     payment_status: v.optional(v.string()),
     created_at: v.string(),
   }).index("by_user", ["user_id"]),
+  crawls: defineTable({
+    user_id: v.string(),
+    url: v.string(),
+    status: v.string(),
+    created_at: v.string(),
+    data: v.optional(v.string()),
+  }).index("by_user", ["user_id"]),
 })

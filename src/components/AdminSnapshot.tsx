@@ -9,6 +9,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { api } from "../../convex/_generated/api";
 import { Button as UIButton } from "@/components/ui/button";
 import { crawlUrl } from "@/services/firecrawl";
+import { useAuth } from "@/hooks/useAuth";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 interface AdminStats {
   totalUsers: number;
@@ -33,7 +36,9 @@ interface RecentActivity {
 }
 
 const AdminSnapshot = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
+  const crawls = useQuery(api.crawls.list, { user_id: user?.id } as any) || []
+  const recordCrawl = useMutation(api.crawls.record)
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
@@ -163,6 +168,11 @@ const AdminSnapshot = () => {
               onClick={async () => {
                 try {
                   await crawlUrl('https://jiji.ng/search?query=car%20parts')
+                  if (user) {
+                    try {
+                      await recordCrawl({ user_id: user.id, url: 'https://jiji.ng/search?query=car%20parts', status: 'started' } as any)
+                    } catch {}
+                  }
                   toast({ title: 'Crawl started', description: 'Fetching market data for claims verification' })
                 } catch (e: any) {
                   toast({ title: 'Crawl error', description: e?.message || 'Failed to start crawl', variant: 'destructive' })
