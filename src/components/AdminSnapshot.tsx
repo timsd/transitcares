@@ -167,10 +167,10 @@ const AdminSnapshot = () => {
               size="sm"
               onClick={async () => {
                 try {
-                  await crawlUrl('https://jiji.ng/search?query=car%20parts')
+                  const result = await crawlUrl('https://jiji.ng/search?query=car%20parts')
                   if (user) {
                     try {
-                      await recordCrawl({ user_id: user.id, url: 'https://jiji.ng/search?query=car%20parts', status: 'started' } as any)
+                      await recordCrawl({ user_id: user.id, url: 'https://jiji.ng/search?query=car%20parts', status: 'completed', data: JSON.stringify(result).slice(0, 5000) } as any)
                     } catch {}
                   }
                   toast({ title: 'Crawl started', description: 'Fetching market data for claims verification' })
@@ -303,3 +303,26 @@ const AdminSnapshot = () => {
 };
 
 export default AdminSnapshot;
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          <Card className="shadow-[var(--shadow-soft)]">
+            <CardHeader>
+              <CardTitle className="text-foreground">Recent Crawls</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {(crawls as any[]).slice(0, 5).map((c) => (
+                  <div key={c._id || c.id} className="border rounded p-3">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleString()}</span>
+                      <Badge variant="outline">{c.status}</Badge>
+                    </div>
+                    <p className="text-xs mt-2 break-words">{c.url}</p>
+                  </div>
+                ))}
+                {(crawls as any[]).length === 0 && (
+                  <p className="text-sm text-muted-foreground">No crawl activity yet.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>

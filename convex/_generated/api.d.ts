@@ -9,6 +9,7 @@
  */
 
 import type * as functions_claims from "../functions/claims.js";
+import type * as functions_crawls from "../functions/crawls.js";
 import type * as functions_payments from "../functions/payments.js";
 import type * as functions_profiles from "../functions/profiles.js";
 import type * as functions_withdrawals from "../functions/withdrawals.js";
@@ -21,6 +22,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "functions/claims": typeof functions_claims;
+  "functions/crawls": typeof functions_crawls;
   "functions/payments": typeof functions_payments;
   "functions/profiles": typeof functions_profiles;
   "functions/withdrawals": typeof functions_withdrawals;

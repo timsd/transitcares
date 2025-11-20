@@ -9,5 +9,8 @@ export const Route = createFileRoute('/admin')({
       if (!token || role !== 'admin') throw redirect({ to: '/auth' })
     }
   },
+  loader: async () => {
+    return { serverTime: new Date().toISOString() }
+  },
   component: () => <Admin />,
 })

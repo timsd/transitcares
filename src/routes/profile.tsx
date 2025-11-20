@@ -8,5 +8,8 @@ export const Route = createFileRoute('/profile')({
       if (!token) throw redirect({ to: '/auth' })
     }
   },
+  loader: async () => {
+    return { serverTime: new Date().toISOString() }
+  },
   component: () => <Profile />,
 })

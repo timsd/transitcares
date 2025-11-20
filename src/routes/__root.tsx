@@ -23,6 +23,13 @@ if (typeof window !== 'undefined' && dsn) {
     environment: import.meta.env.MODE,
   })
 }
+if (typeof window === 'undefined' && dsn) {
+  Sentry.init({
+    dsn,
+    tracesSampleRate: 1.0,
+    environment: import.meta.env.MODE,
+  })
+}
 
 export const Route = createRootRoute({
   head: () => ({
