@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "convex/react";
 import { useToast } from "@/components/ui/use-toast";
 import { api } from "../../convex/_generated/api";
+import { Button as UIButton } from "@/components/ui/button";
+import { crawlUrl } from "@/services/firecrawl";
 
 interface AdminStats {
   totalUsers: number;
@@ -155,6 +157,21 @@ const AdminSnapshot = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Real-time insights and analytics for RepairRide platform management.
           </p>
+          <div className="flex items-center justify-center mt-4 gap-3">
+            <UIButton
+              size="sm"
+              onClick={async () => {
+                try {
+                  await crawlUrl('https://jiji.ng/search?query=car%20parts')
+                  toast({ title: 'Crawl started', description: 'Fetching market data for claims verification' })
+                } catch (e: any) {
+                  toast({ title: 'Crawl error', description: e?.message || 'Failed to start crawl', variant: 'destructive' })
+                }
+              }}
+            >
+              Run Price Crawl
+            </UIButton>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

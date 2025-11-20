@@ -59,6 +59,10 @@ export default {
       return new Response(JSON.stringify({ token: jwt }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
     }
 
+    if (request.method === 'GET' && url.pathname === '/') {
+      return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+    }
+
     if (request.method === 'GET' && url.pathname === '/paystack/verify') {
       const reference = url.searchParams.get('reference')
       if (!reference) return new Response(JSON.stringify({ status: 'error', message: 'Missing reference' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
