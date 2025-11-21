@@ -10,7 +10,7 @@ import { api } from "../../convex/_generated/api";
 import { Button as UIButton } from "@/components/ui/button";
 import { crawlUrl } from "@/services/firecrawl";
 import { useAuth } from "@/hooks/useAuth";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 interface AdminStats {
@@ -39,6 +39,7 @@ const AdminSnapshot = () => {
   const { isAdmin, user } = useAuth();
   const crawls = useQuery(api.crawls.list, { user_id: user?.id } as any) || []
   const recordCrawl = useMutation(api.crawls.record)
+  const startCrawl = useAction(api.crawl.start)
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
@@ -167,11 +168,12 @@ const AdminSnapshot = () => {
               size="sm"
               onClick={async () => {
                 try {
-                  const result = await crawlUrl('https://jiji.ng/search?query=car%20parts')
                   if (user) {
                     try {
-                      await recordCrawl({ user_id: user.id, url: 'https://jiji.ng/search?query=car%20parts', status: 'completed', data: JSON.stringify(result).slice(0, 5000) } as any)
+                      await startCrawl({ user_id: user.id, url: 'https://jiji.ng/search?query=car%20parts' } as any)
                     } catch {}
+                  } else {
+                    await crawlUrl('https://jiji.ng/search?query=car%20parts')
                   }
                   toast({ title: 'Crawl started', description: 'Fetching market data for claims verification' })
                 } catch (e: any) {
