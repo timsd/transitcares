@@ -85,19 +85,13 @@ const Profile = () => {
       ProfileSchema.parse(formData)
 
       let vehicle_photo_key: string | null = null
-      if (vehiclePhoto) {
+      if (vehiclePhoto && convex) {
         try {
-          const jwt = localStorage.getItem('auth_token') || ''
-          const form = new FormData()
-          form.append('file', vehiclePhoto)
-          const res = await fetch((import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '') + '/upload', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${jwt}` },
-            body: form,
-          })
+          const { url } = await convex.mutation(api.uploads.getUploadUrl, {} as any)
+          const res = await fetch(url, { method: 'POST', body: vehiclePhoto })
           if (res.ok) {
             const data = await res.json()
-            vehicle_photo_key = data.key
+            vehicle_photo_key = data.storageId
           }
         } catch {}
       }

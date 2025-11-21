@@ -28,6 +28,7 @@ const ClaimsCenter = () => {
   const claimsList = useQuery(api.claims.list, { user_id: user?.id } as any) || []
   const paymentsList = useQuery(api.payments.list, { user_id: user?.id } as any) || []
   const createClaim = useMutation(api.claims.create)
+  const getUploadUrl = useMutation(api.uploads.getUploadUrl)
   const [payments, setPayments] = useState<any[]>([])
 
   useEffect(() => {
@@ -123,17 +124,12 @@ const ClaimsCenter = () => {
                   const hasVehicle = !!(profile?.vehicle_type && profile?.vehicle_id)
                   if (!hasVehicle) return navigate('/profile')
                   try {
-                    const form = new FormData()
-                    form.append('file', file)
-                    const jwt = localStorage.getItem('auth_token') || ''
-                    const res = await fetch((import.meta.env.VITE_R2_WORKER_URL as string || '') + '/upload', {
-                      method: 'POST',
-                      headers: { 'Authorization': `Bearer ${jwt}` },
-                      body: form,
-                    })
+                    const { url } = await getUploadUrl({} as any)
+                    if (!url) throw new Error('Upload URL failed')
+                    const res = await fetch(url, { method: 'POST', body: file })
                     if (!res.ok) throw new Error('Upload failed')
                     const data = await res.json()
-                    setUploadedKey(data.key)
+                    setUploadedKey(data.storageId)
                     toast.success('Invoice uploaded')
                   } catch (err: any) {
                     toast.error('Upload error', { description: err.message })
