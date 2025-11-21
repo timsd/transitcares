@@ -40,6 +40,7 @@ const AdminSnapshot = () => {
   const crawls = useQuery(api.crawls.list, { user_id: user?.id } as any) || []
   const recordCrawl = useMutation(api.crawls.record)
   const startCrawl = useAction(api.crawl.start)
+  const metricsAll = useQuery(api.metrics.list, {} as any) || []
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
@@ -325,6 +326,49 @@ export default AdminSnapshot;
                   <p className="text-sm text-muted-foreground">No crawl activity yet.</p>
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-[var(--shadow-soft)]">
+            <CardHeader>
+              <CardTitle className="text-foreground">Performance Metrics</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {(() => {
+                const last7 = (metricsAll as any[]).filter((m) => {
+                  const t = new Date(m.created_at).getTime();
+                  return Date.now() - t <= 7 * 24 * 60 * 60 * 1000;
+                })
+                const group = (op: string) => last7.filter((m) => m.op === op)
+                const avg = (list: any[]) => list.length ? Math.round(list.reduce((a, b) => a + Number(b.duration_ms || 0), 0) / list.length) : 0
+                const payList = group('payments:record')
+                const claimList = group('claims:create')
+                const payAvg = avg(payList)
+                const claimAvg = avg(claimList)
+                const payErr = payList.filter((m) => m.status === 'error').length
+                const claimErr = claimList.filter((m) => m.status === 'error').length
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Payments (avg)</span>
+                      <Badge variant="secondary">{payAvg} ms</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Payments errors</span>
+                      <Badge variant="outline">{payErr}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Claims (avg)</span>
+                      <Badge variant="secondary">{claimAvg} ms</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Claims errors</span>
+                      <Badge variant="outline">{claimErr}</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Window: last 7 days</p>
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
         </div>

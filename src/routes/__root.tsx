@@ -13,6 +13,9 @@ import '@/index.css'
 const queryClient = new QueryClient()
 
 const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined
+const tunnel = (import.meta.env.VITE_R2_WORKER_URL as string | undefined)
+  ? (import.meta.env.VITE_R2_WORKER_URL as string).replace(/\/+$/, '') + '/tunnel'
+  : undefined
 if (typeof window !== 'undefined' && dsn) {
   Sentry.init({
     dsn,
@@ -21,6 +24,7 @@ if (typeof window !== 'undefined' && dsn) {
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
     environment: import.meta.env.MODE,
+    tunnel,
   })
 }
 if (typeof window === 'undefined' && dsn) {

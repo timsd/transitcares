@@ -14,3 +14,22 @@ export const list = query({
   },
 })
 
+export const summary = query({
+  args: { days: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const days = args.days ?? 7
+    const since = Date.now() - days * 24 * 60 * 60 * 1000
+    const all = await ctx.db.query("metrics").collect()
+    const recent = all.filter((m: any) => new Date(m.created_at).getTime() >= since)
+    const byOp = (op: string) => recent.filter((m: any) => m.op === op)
+    const avg = (list: any[]) => list.length ? Math.round(list.reduce((a, b) => a + Number(b.duration_ms || 0), 0) / list.length) : 0
+    const payments = byOp('payments:record')
+    const claims = byOp('claims:create')
+    return {
+      windowDays: days,
+      payments: { avgMs: avg(payments), errors: payments.filter((m: any) => m.status === 'error').length, count: payments.length },
+      claims: { avgMs: avg(claims), errors: claims.filter((m: any) => m.status === 'error').length, count: claims.length },
+      total: recent.length,
+    }
+  },
+})

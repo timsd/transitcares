@@ -110,6 +110,23 @@ export default {
       }
     }
 
+    if (request.method === 'POST' && url.pathname === '/tunnel') {
+      try {
+        const dsn = env.SENTRY_DSN as string | undefined
+        if (!dsn) return new Response('Missing DSN', { status: 200, headers: corsHeaders })
+        const m = dsn.match(/^https:\/\/([^@]+)@[^\/]+\/(\d+)/)
+        const key = m?.[1]
+        const project = m?.[2]
+        if (!key || !project) return new Response('Invalid DSN', { status: 400, headers: corsHeaders })
+        const endpoint = `https://sentry.io/api/${project}/envelope/?sentry_key=${key}&sentry_version=7`
+        const body = await request.arrayBuffer()
+        const resp = await fetch(endpoint, { method: 'POST', body })
+        return new Response(resp.body, { status: resp.status, headers: { 'Access-Control-Allow-Origin': allowedOrigin } })
+      } catch (e: any) {
+        return new Response('Tunnel error', { status: 500, headers: corsHeaders })
+      }
+    }
+
     return new Response('Not found', { status: 404, headers: corsHeaders })
   }
 }

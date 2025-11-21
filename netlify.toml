@@ -22,3 +22,7 @@
 
 [functions]
   node_bundler = "esbuild"
+
+[[scheduled]]
+  path = "/.netlify/functions/metrics-summary"
+  schedule = "0 9 * * 1"
