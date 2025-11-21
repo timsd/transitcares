@@ -11,7 +11,9 @@ import PaystackPayment from "@/components/PaystackPayment";
 import { WithdrawalDialog } from "./WithdrawalDialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import logoImage from "@/assets/android-chrome-192x192.png";
+import iconSmall from "@/assets/apple-touch-icon.png";
+import iconMedium from "@/assets/android-chrome-192x192.png";
+import iconLarge from "@/assets/android-chrome-512x512.png";
 
 const UserDashboard = () => {
   const { user, profile } = useAuth();
@@ -64,6 +66,13 @@ const UserDashboard = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Here's your personalized dashboard with all your vehicle insurance information and quick actions.
           </p>
+          <div className="flex justify-center mt-6">
+            <picture>
+              <source media="(min-width: 1024px)" srcSet={iconLarge} />
+              <source media="(min-width: 768px)" srcSet={iconMedium} />
+              <img src={iconSmall} alt="TransitCares" className="h-12 w-auto object-contain" />
+            </picture>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

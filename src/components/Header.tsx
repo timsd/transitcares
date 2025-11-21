@@ -3,7 +3,9 @@ import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "@/lib/navigation";
 import MobileMenu from "./MobileMenu";
-import logoImage from "@/assets/android-chrome-192x192.png";
+import iconSmall from "@/assets/apple-touch-icon.png";
+import iconMedium from "@/assets/android-chrome-192x192.png";
+import iconLarge from "@/assets/android-chrome-512x512.png";
 
 const Header = () => {
   const { user, signOut, isAdmin } = useAuth();
@@ -24,7 +26,11 @@ const Header = () => {
           {/* Logo */}
           <button className="flex items-center gap-3" onClick={() => navigate('/')}
             aria-label="Go to home">
-            <img src={logoImage} alt="TransitCares Logo" className="h-10 w-auto object-contain" />
+            <picture>
+              <source media="(min-width: 1024px)" srcSet={iconLarge} />
+              <source media="(min-width: 768px)" srcSet={iconMedium} />
+              <img src={iconSmall} alt="TransitCares Logo" className="h-9 w-auto object-contain" />
+            </picture>
             <div>
               <h1 className="font-montserrat font-bold text-xl">
                 <span className="text-brand-transit">Transit</span>

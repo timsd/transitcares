@@ -13,7 +13,9 @@ import {
   Users
 } from "lucide-react";
 import { useNavigate } from "@/lib/navigation";
-import logoImage from "@/assets/android-chrome-192x192.png";
+import iconSmall from "@/assets/apple-touch-icon.png";
+import iconMedium from "@/assets/android-chrome-192x192.png";
+import iconLarge from "@/assets/android-chrome-512x512.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -27,7 +29,11 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src={logoImage} alt="TransitCares Logo" className="h-8 w-auto object-contain" />
+              <picture>
+                <source media="(min-width: 1024px)" srcSet={iconLarge} />
+                <source media="(min-width: 768px)" srcSet={iconMedium} />
+                <img src={iconSmall} alt="TransitCares Logo" className="h-7 w-auto object-contain" />
+              </picture>
               <h3 className="font-montserrat font-bold text-xl">
                 <span className="text-brand-transit">Transit</span>
                 <span className="text-brand-cares">Cares</span>
