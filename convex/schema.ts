@@ -51,4 +51,12 @@ export default defineSchema({
     created_at: v.string(),
     data: v.optional(v.string()),
   }).index("by_user", ["user_id"]),
+  metrics: defineTable({
+    user_id: v.optional(v.string()),
+    op: v.string(),
+    duration_ms: v.number(),
+    status: v.string(),
+    created_at: v.string(),
+    extra: v.optional(v.string()),
+  }).index("by_user", ["user_id"]),
 })
