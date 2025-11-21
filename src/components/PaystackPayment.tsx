@@ -111,6 +111,12 @@ const PaystackPayment = ({
         
         if (onSuccess) onSuccess();
       } catch (error) {
+        try {
+          const base = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
+          if (base) {
+            await fetch(base + '/sentry/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Payment verification failed', level: 'error', extra: { reference, paymentType } }) })
+          }
+        } catch {}
         Sentry.captureException(error);
         toast.error('Payment verification failed', {
           description: 'Please contact support if amount was deducted.'

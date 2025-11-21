@@ -78,6 +78,38 @@ export default {
       }
     }
 
+    if (request.method === 'POST' && url.pathname === '/sentry/capture') {
+      try {
+        const dsn = env.SENTRY_DSN as string | undefined
+        const body = await request.json().catch(() => ({}))
+        if (!dsn) {
+          return new Response(JSON.stringify({ status: 'noop' }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+        }
+        const m = dsn.match(/^https:\/\/([^@]+)@[^\/]+\/(\d+)/)
+        const key = m?.[1]
+        const project = m?.[2]
+        if (!key || !project) {
+          return new Response(JSON.stringify({ status: 'error', message: 'Invalid DSN' }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+        }
+        const endpoint = `https://sentry.io/api/${project}/store/?sentry_key=${key}&sentry_version=7`
+        const payload = {
+          message: body?.message || 'Captured error',
+          level: body?.level || 'error',
+          timestamp: Math.floor(Date.now() / 1000),
+          extra: body?.extra || {},
+          tags: body?.tags || {},
+        }
+        const resp = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        return new Response(JSON.stringify({ status: resp.ok ? 'ok' : 'failed' }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+      } catch (e: any) {
+        return new Response(JSON.stringify({ status: 'error', message: e?.message || 'capture failed' }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+      }
+    }
+
     return new Response('Not found', { status: 404, headers: corsHeaders })
   }
 }

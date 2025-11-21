@@ -183,7 +183,15 @@ const ClaimsCenter = () => {
                     claim_amount: 0,
                     description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
                   } as any)
-                } catch (e) { Sentry.captureException(e) } finally { tx.finish() }
+                } catch (e) {
+                  try {
+                    const base = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
+                    if (base) {
+                      await fetch(base + '/sentry/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Claim creation failed', level: 'error', extra: { error: String(e) } }) })
+                    }
+                  } catch {}
+                  Sentry.captureException(e)
+                } finally { tx.finish() }
               }}>
                 Submit Claim
               </Button>
