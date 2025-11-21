@@ -8,10 +8,13 @@
  * @module
  */
 
+import type * as actions_crawl from "../actions/crawl.js";
 import type * as functions_claims from "../functions/claims.js";
 import type * as functions_crawls from "../functions/crawls.js";
+import type * as functions_metrics from "../functions/metrics.js";
 import type * as functions_payments from "../functions/payments.js";
 import type * as functions_profiles from "../functions/profiles.js";
+import type * as functions_uploads from "../functions/uploads.js";
 import type * as functions_withdrawals from "../functions/withdrawals.js";
 
 import type {
@@ -21,10 +24,13 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "actions/crawl": typeof actions_crawl;
   "functions/claims": typeof functions_claims;
   "functions/crawls": typeof functions_crawls;
+  "functions/metrics": typeof functions_metrics;
   "functions/payments": typeof functions_payments;
   "functions/profiles": typeof functions_profiles;
+  "functions/uploads": typeof functions_uploads;
   "functions/withdrawals": typeof functions_withdrawals;
 }>;
 

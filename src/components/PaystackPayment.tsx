@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { useMutation } from 'convex/react';
+import { useMutation, useAction } from 'convex/react';
 import * as Sentry from '@sentry/react';
 const startTransaction = (Sentry as any).startTransaction?.bind(Sentry) || (() => ({ finish() {} }))
-import { api } from '../../convex/_generated/api';
 import { api } from '../../convex/_generated/api';
 
 interface PaystackPaymentProps {
@@ -37,6 +36,7 @@ const PaystackPayment = ({
     }
   }, [])
   const recordPayment = useMutation(api.payments.record);
+  const verifyAndRecord = useAction(api.paystack.verifyAndRecord);
   
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string || "";
   
@@ -59,22 +59,10 @@ const PaystackPayment = ({
     onSuccess: async (reference: any) => {
       const tx = startTransaction({ name: 'payment:onSuccess', op: 'payment', data: { paymentType } })
       try {
-        let verified = false
         let ref = reference?.reference || reference?.trxref || ''
-        try {
-          const verifyBase = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
-          if (verifyBase && ref) {
-            const res = await fetch(`${verifyBase}/paystack/verify?reference=${encodeURIComponent(ref)}`)
-            if (res.ok) {
-              const data = await res.json()
-              verified = data?.status === 'success'
-            }
-          }
-        } catch {}
-
         if (user) {
           try {
-            await recordPayment({ user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
+            await verifyAndRecord({ user_id: user.id, amount, payment_type: paymentType, plan_tier: profile?.plan_tier, reference: ref } as any)
           } catch {}
         } else {
           const payments = JSON.parse(localStorage.getItem('payments') || '[]')
@@ -83,7 +71,7 @@ const PaystackPayment = ({
             user_id: user?.id,
             amount,
             payment_type: paymentType,
-            payment_status: verified ? 'verified' : 'pending',
+            payment_status: 'pending',
             reference: ref,
             plan_tier: profile?.plan_tier,
             created_at: new Date().toISOString(),
@@ -94,14 +82,14 @@ const PaystackPayment = ({
         
         if (paymentType === 'topup' && user) {
           try {
-            await recordPayment({ user_id: user.id, amount, payment_type: 'topup', plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
+            await verifyAndRecord({ user_id: user.id, amount, payment_type: 'topup', plan_tier: profile?.plan_tier, reference: ref } as any)
           } catch {}
         }
 
         
         if (paymentType === 'registration' && user) {
           try {
-            await recordPayment({ user_id: user.id, amount, payment_type: 'registration', plan_tier: profile?.plan_tier, reference: ref, payment_status: verified ? 'verified' : 'pending' } as any)
+            await verifyAndRecord({ user_id: user.id, amount, payment_type: 'registration', plan_tier: profile?.plan_tier, reference: ref } as any)
           } catch {}
         }
 

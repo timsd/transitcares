@@ -11,7 +11,7 @@ import PaystackPayment from "@/components/PaystackPayment";
 import { WithdrawalDialog } from "./WithdrawalDialog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import logoImage from "@/assets/transitcares-logo.jpg";
+import logoImage from "@/assets/android-chrome-192x192.png";
 
 const UserDashboard = () => {
   const { user, profile } = useAuth();

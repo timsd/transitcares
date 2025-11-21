@@ -13,7 +13,7 @@ import {
   Users
 } from "lucide-react";
 import { useNavigate } from "@/lib/navigation";
-import logoImage from "@/assets/transitcares-logo.jpg";
+import logoImage from "@/assets/android-chrome-192x192.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -27,7 +27,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <img src={logoImage} alt="TransitCares Logo" className="h-10 w-10 object-contain" />
+              <img src={logoImage} alt="TransitCares Logo" className="h-8 w-auto object-contain" />
               <h3 className="font-montserrat font-bold text-xl">
                 <span className="text-brand-transit">Transit</span>
                 <span className="text-brand-cares">Cares</span>
