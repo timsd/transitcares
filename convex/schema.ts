@@ -59,4 +59,11 @@ export default defineSchema({
     created_at: v.string(),
     extra: v.optional(v.string()),
   }).index("by_user", ["user_id"]),
+  metrics_rollup: defineTable({
+    date: v.string(),
+    op: v.string(),
+    avg_ms: v.number(),
+    count: v.number(),
+    errors: v.number(),
+  }).index("by_op_date", ["op", "date"]),
 })

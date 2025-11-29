@@ -19,6 +19,10 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as NotfoundRouteImport } from './routes/_notfound'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminClaimsRouteImport } from './routes/admin.claims'
+import { Route as AdminLayoutRouteImport } from './routes/admin._layout'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -69,10 +73,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClaimsRoute = AdminClaimsRouteImport.update({
+  id: '/claims',
+  path: '/claims',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLayoutRoute = AdminLayoutRouteImport.update({
+  id: '/_layout',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminLayoutRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/mechanics': typeof MechanicsRoute
@@ -80,10 +103,12 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/registration': typeof RegistrationRoute
   '/terms': typeof TermsRoute
+  '/admin/claims': typeof AdminClaimsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/mechanics': typeof MechanicsRoute
@@ -91,12 +116,15 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/registration': typeof RegistrationRoute
   '/terms': typeof TermsRoute
+  '/admin': typeof AdminIndexRoute
+  '/admin/claims': typeof AdminClaimsRoute
+  '/admin/users': typeof AdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_notfound': typeof NotfoundRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/mechanics': typeof MechanicsRoute
@@ -104,6 +132,10 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/registration': typeof RegistrationRoute
   '/terms': typeof TermsRoute
+  '/admin/_layout': typeof AdminLayoutRoute
+  '/admin/claims': typeof AdminClaimsRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,10 +149,12 @@ export interface FileRouteTypes {
     | '/profile'
     | '/registration'
     | '/terms'
+    | '/admin/claims'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/admin'
     | '/auth'
     | '/cookies'
     | '/mechanics'
@@ -128,6 +162,9 @@ export interface FileRouteTypes {
     | '/profile'
     | '/registration'
     | '/terms'
+    | '/admin'
+    | '/admin/claims'
+    | '/admin/users'
   id:
     | '__root__'
     | '/'
@@ -140,12 +177,16 @@ export interface FileRouteTypes {
     | '/profile'
     | '/registration'
     | '/terms'
+    | '/admin/_layout'
+    | '/admin/claims'
+    | '/admin/users'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   NotfoundRoute: typeof NotfoundRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   MechanicsRoute: typeof MechanicsRoute
@@ -227,13 +268,57 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/claims': {
+      id: '/admin/claims'
+      path: '/claims'
+      fullPath: '/admin/claims'
+      preLoaderRoute: typeof AdminClaimsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/_layout': {
+      id: '/admin/_layout'
+      path: ''
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminLayoutRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminLayoutRoute: typeof AdminLayoutRoute
+  AdminClaimsRoute: typeof AdminClaimsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminLayoutRoute: AdminLayoutRoute,
+  AdminClaimsRoute: AdminClaimsRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   NotfoundRoute: NotfoundRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   MechanicsRoute: MechanicsRoute,

@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const WeeklyCompliance = () => {
   const { user, profile } = useAuth();
-  const paymentsList = useQuery(api.payments.list, { user_id: user?.id } as any) || [];
+  const paymentsList = useQuery(api.functions.payments.list, { user_id: user?.id } as any) || [];
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [autoPay, setAutoPay] = useState<boolean>(false);
   const [payments, setPayments] = useState<any[]>([]);
@@ -86,7 +86,7 @@ const WeeklyCompliance = () => {
     const data: any = { payment_days: selectedDays, auto_payment_enabled: autoPay };
     try {
       if (convex) {
-        await convex.mutation(api.profiles.upsert, { user_id: user.id, data } as any);
+        await convex.mutation(api.functions.profiles.upsert, { user_id: user.id, data } as any);
       }
       const key = 'profile:' + user.id;
       const prof = JSON.parse(localStorage.getItem(key) || '{}');

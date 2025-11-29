@@ -130,7 +130,12 @@ const plans = [
                       if (user) {
                         const key = 'profile:' + user.id
                         const prof = JSON.parse(localStorage.getItem(key) || '{}')
-                        localStorage.setItem(key, JSON.stringify({ ...prof, plan_tier: plan.variant }))
+                        const defaultDays = ['Monday','Tuesday','Thursday','Friday']
+                        localStorage.setItem(key, JSON.stringify({ 
+                          ...prof, 
+                          plan_tier: plan.variant,
+                          payment_days: Array.isArray(prof.payment_days) && prof.payment_days.length >= 4 ? prof.payment_days : defaultDays
+                        }))
                         navigate('/registration')
                       } else {
                         navigate('/auth')

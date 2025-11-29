@@ -7,6 +7,7 @@ import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 import { useNavigate } from "@/lib/navigation";
 import WeeklyCompliance from "@/components/WeeklyCompliance";
 import WalletHistory from "@/components/WalletHistory";
+import ClaimsCenter from "@/components/ClaimsCenter";
 import PaystackPayment from "@/components/PaystackPayment";
 import { WithdrawalDialog } from "./WithdrawalDialog";
 import { useEffect, useState } from "react";
@@ -27,9 +28,9 @@ const UserDashboard = () => {
 
   useEffect(() => {
     const tier = profile?.plan_tier?.toLowerCase()
-    if (tier === 'gold') setDailyPremium(500)
-    else if (tier === 'silver') setDailyPremium(350)
-    else if (tier === 'bronze') setDailyPremium(200)
+    if (tier === 'gold') setDailyPremium(4000)
+    else if (tier === 'silver') setDailyPremium(2500)
+    else if (tier === 'bronze') setDailyPremium(1500)
     else setDailyPremium(null)
   }, [profile?.plan_tier])
 
@@ -70,7 +71,14 @@ const UserDashboard = () => {
             <picture>
               <source media="(min-width: 1024px)" srcSet={iconLarge} />
               <source media="(min-width: 768px)" srcSet={iconMedium} />
-              <img src={iconSmall} alt="TransitCares" className="h-12 w-auto object-contain" />
+              <img
+                src={iconSmall}
+                alt="TransitCares"
+                className="h-12 w-auto object-contain"
+                width={48}
+                height={48}
+                decoding="async"
+              />
             </picture>
           </div>
         </div>
@@ -196,8 +204,11 @@ const UserDashboard = () => {
         </div>
       </div>
       
-      <WithdrawalDialog open={showWithdrawal} onOpenChange={setShowWithdrawal} />
-    </section>
+  <WithdrawalDialog open={showWithdrawal} onOpenChange={setShowWithdrawal} />
+    <div className="container mx-auto px-4">
+      <ClaimsCenter />
+    </div>
+  </section>
   );
 };
 

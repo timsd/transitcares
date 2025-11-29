@@ -32,7 +32,14 @@ const Footer = () => {
               <picture>
                 <source media="(min-width: 1024px)" srcSet={iconLarge} />
                 <source media="(min-width: 768px)" srcSet={iconMedium} />
-                <img src={iconSmall} alt="TransitCares Logo" className="h-7 w-auto object-contain" />
+                <img
+                  src={iconSmall}
+                  alt="TransitCares Logo"
+                  className="h-7 w-auto object-contain"
+                  width={28}
+                  height={28}
+                  decoding="async"
+                />
               </picture>
               <h3 className="font-montserrat font-bold text-xl">
                 <span className="text-brand-transit">Transit</span>

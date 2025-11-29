@@ -19,22 +19,24 @@ import { api } from "../../convex/_generated/api";
 import * as Sentry from '@sentry/react';
 const startTransaction = (Sentry as any).startTransaction?.bind(Sentry) || (() => ({ finish() {} }))
 
-const ClaimsCenter = () => {
+const ClaimsCenter = ({ showRecent = true }: { showRecent?: boolean }) => {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [recentClaims, setRecentClaims] = useState<Array<any>>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [uploadedKey, setUploadedKey] = useState<string | null>(null)
-  const claimsList = useQuery(api.claims.list, { user_id: user?.id } as any) || []
-  const paymentsList = useQuery(api.payments.list, { user_id: user?.id } as any) || []
-  const createClaim = useMutation(api.claims.create)
-  const getUploadUrl = useMutation(api.uploads.getUploadUrl)
+  const claimsList = useQuery(api.functions.claims.list, user ? ({ user_id: user.id } as any) : undefined) || []
+  const paymentsList = useQuery(api.functions.payments.list, user ? ({ user_id: user.id } as any) : undefined) || []
+  const createClaim = useMutation(api.functions.claims.create)
+  const getUploadUrl = useMutation(api.functions.uploads.getUploadUrl)
   const [payments, setPayments] = useState<any[]>([])
 
   useEffect(() => {
     setRecentClaims(Array.isArray(claimsList) ? claimsList : [])
+  }, [Array.isArray(claimsList) ? claimsList.length : 0])
+  useEffect(() => {
     setPayments(Array.isArray(paymentsList) ? paymentsList : [])
-  }, [claimsList, paymentsList])
+  }, [Array.isArray(paymentsList) ? paymentsList.length : 0])
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
   const startOfWeek = useMemo(() => {
@@ -194,59 +196,60 @@ const ClaimsCenter = () => {
             </CardContent>
           </Card>
 
-          {/* Recent Claims */}
-          <Card className="shadow-[var(--shadow-soft)]">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-primary" />
-                Recent Claims
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentClaims.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No claims yet</p>
-                )}
-                {recentClaims.map((claim) => (
-                  <div key={claim.id} className="border border-border rounded-lg p-4 hover:shadow-sm transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="font-medium text-foreground">{claim.claim_type || claim.type}</p>
-                        <p className="text-sm text-muted-foreground">{claim.id}</p>
+          {showRecent && (
+            <Card className="shadow-[var(--shadow-soft)]">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  Recent Claims
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {recentClaims.length === 0 && (
+                    <p className="text-sm text-muted-foreground">No claims yet</p>
+                  )}
+                  {recentClaims.map((claim) => (
+                    <div key={claim.id} className="border border-border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="font-medium text-foreground">{claim.claim_type || claim.type}</p>
+                          <p className="text-sm text-muted-foreground">{claim.id}</p>
+                        </div>
+                        <Badge className={getStatusColor(claim.claim_status || claim.status)}>
+                          {getStatusIcon(claim.claim_status || claim.status)}
+                          {claim.claim_status || claim.status}
+                        </Badge>
                       </div>
-                      <Badge className={getStatusColor(claim.claim_status || claim.status)}>
-                        {getStatusIcon(claim.claim_status || claim.status)}
-                        {claim.claim_status || claim.status}
-                      </Badge>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {claim.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-lg font-bold text-foreground">
-                          ₦{Number((claim.claim_amount ?? claim.amount) || 0).toLocaleString()}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Filed on {new Date(claim.created_at || claim.date).toLocaleDateString()}
-                        </p>
+                      
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {claim.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-lg font-bold text-foreground">
+                            ₦{Number((claim.claim_amount ?? claim.amount) || 0).toLocaleString()}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Filed on {new Date(claim.created_at || claim.date).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                        View
-                      </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-              
-              <Button variant="outline" className="w-full mt-6">
-                View All Claims
-              </Button>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+                
+                <Button variant="outline" className="w-full mt-6">
+                  View All Claims
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </section>

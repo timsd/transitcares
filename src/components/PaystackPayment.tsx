@@ -35,8 +35,8 @@ const PaystackPayment = ({
       })
     }
   }, [])
-  const recordPayment = useMutation(api.payments.record);
-  const verifyAndRecord = useAction(api.paystack.verifyAndRecord);
+  const recordPayment = useMutation(api.functions.payments.record);
+  const verifyAndRecord = useAction(api.actions.paystack.verifyAndRecord);
   
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string || "";
   
