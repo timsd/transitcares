@@ -87,7 +87,7 @@ const Profile = () => {
       let vehicle_photo_key: string | null = null
       if (vehiclePhoto && convex) {
         try {
-          const { url } = await convex.mutation(api.uploads.getUploadUrl, {} as any)
+          const { url } = await convex.mutation(api.functions.uploads.getUploadUrl, {} as any)
           const res = await fetch(url, { method: 'POST', body: vehiclePhoto })
           if (res.ok) {
             const data = await res.json()
@@ -106,7 +106,7 @@ const Profile = () => {
 
       if (convex) {
         try {
-          await convex.mutation(api.profiles.upsert, { user_id: user.id, data: payload } as any)
+          await convex.mutation(api.functions.profiles.upsert, { user_id: user.id, data: payload } as any)
         } catch {}
       }
 

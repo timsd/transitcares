@@ -1,35 +1,35 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "/@/components/ui/card";
+import { Progress } from "/@/components/ui/progress";
+import { Badge } from "/@/components/ui/badge";
 import { Calendar, CheckCircle, XCircle, Clock } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "/@/hooks/useAuth";
 import PaystackPayment from "./PaystackPayment";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "convex/react";
+import { Checkbox } from "/@/components/ui/checkbox";
+import { Switch } from "/@/components/ui/switch";
+import { Button } from "/@/components/ui/button";
+import { useConvex, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useEffect, useMemo, useState } from "react";
 
 const WeeklyCompliance = () => {
   const { user, profile } = useAuth();
-  const weeklyPaymentStatus = useQuery(api.weeklyPayments.getWeeklyPaymentStatus, {
-    user_id: user?.id || ''
-  });
+  const convex = useConvex();
+  const paymentsList = useQuery(api.functions.payments.list, { user_id: user?.id } as any) || [];
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [autoPay, setAutoPay] = useState<boolean>(false);
+  const [payments, setPayments] = useState<any[]>([]);
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   const getPlanAmount = (tier: string | null | undefined) => {
     switch(tier?.toLowerCase()) {
-      case 'bronze': return 6000; // 4 days × ₦1,500
-      case 'silver': return 10000; // 4 days × ₦2,500
-      case 'gold': return 16000; // 4 days × ₦4,000
-      default: return 6000;
+      case 'bronze': return 200;
+      case 'silver': return 350;
+      case 'gold': return 500;
+      default: return 200;
     }
   };
 
-  const weeklyAmount = getPlanAmount(profile?.plan_tier);
+  const dailyPremium = getPlanAmount(profile?.plan_tier);
   const registrationFee = 5000;
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const WeeklyCompliance = () => {
     const data: any = { payment_days: selectedDays, auto_payment_enabled: autoPay };
     try {
       if (convex) {
-        await convex.mutation(api.profiles.upsert, { user_id: user.id, data } as any);
+        await convex.mutation(api.functions.profiles.upsert, { user_id: user.id, data } as any);
       }
       const key = 'profile:' + user.id;
       const prof = JSON.parse(localStorage.getItem(key) || '{}');
@@ -122,7 +122,7 @@ const WeeklyCompliance = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Select any 4 days per week</p>
+          <p className="text-sm text-muted-foreground">Select up to 4 payment days</p>
           <div className="flex flex-wrap gap-3">
             {daysOfWeek.map((day) => (
               <label key={day} className="flex items-center gap-2">

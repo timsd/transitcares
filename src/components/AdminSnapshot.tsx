@@ -4,13 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Users, DollarSign, FileText, TrendingUp, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "convex/react";
+
 import { useToast } from "@/components/ui/use-toast";
-import { api } from "../../convex/_generated/api";
 import { Button as UIButton } from "@/components/ui/button";
 import { crawlUrl } from "@/services/firecrawl";
-import { useAuth } from "@/hooks/useAuth";
 import { useMutation, useQuery, useAction } from "convex/react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { api } from "../../convex/_generated/api";
 
 interface AdminStats {
@@ -37,10 +36,11 @@ interface RecentActivity {
 
 const AdminSnapshot = () => {
   const { isAdmin, user } = useAuth();
-  const crawls = useQuery(api.crawls.list, { user_id: user?.id } as any) || []
-  const recordCrawl = useMutation(api.crawls.record)
-  const startCrawl = useAction(api.crawl.start)
-  const summary = useQuery(api.metrics.summary, { days: 7 } as any) || { payments: { avgMs: 0, errors: 0, count: 0 }, claims: { avgMs: 0, errors: 0, count: 0 }, total: 0, windowDays: 7 }
+  const crawls = useQuery(api.functions.crawls.list, isAdmin && user ? ({ user_id: user.id } as any) : undefined) || []
+  const recordCrawl = useMutation(api.functions.crawls.record)
+  const startCrawl = useAction(api.actions.crawl.start)
+  const summary = useQuery(api.functions.metrics.summary, isAdmin ? ({ days: 7 } as any) : undefined) || { payments: { avgMs: 0, errors: 0, count: 0 }, claims: { avgMs: 0, errors: 0, count: 0 }, total: 0, windowDays: 7 }
+  const rollups = useQuery(api.functions.metrics_rollup.list, isAdmin ? ({ days: 28 } as any) : undefined) || []
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats>({
@@ -56,9 +56,9 @@ const AdminSnapshot = () => {
   });
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
 
-  const profilesList = useQuery(api.profiles.list, {} as any) || []
-  const paymentsList = useQuery(api.payments.list, {} as any) || []
-  const claimsList = useQuery(api.claims.list, {} as any) || []
+  const profilesList = useQuery(api.functions.profiles.list, isAdmin ? ({} as any) : undefined) || []
+  const paymentsList = useQuery(api.functions.payments.list, isAdmin ? ({} as any) : undefined) || []
+  const claimsList = useQuery(api.functions.claims.list, isAdmin ? ({} as any) : undefined) || []
 
   const fetchAdminData = async () => {
     try {
@@ -306,62 +306,3 @@ const AdminSnapshot = () => {
 };
 
 export default AdminSnapshot;
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
-          <Card className="shadow-[var(--shadow-soft)]">
-            <CardHeader>
-              <CardTitle className="text-foreground">Recent Crawls</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {(crawls as any[]).slice(0, 5).map((c) => (
-                  <div key={c._id || c.id} className="border rounded p-3">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleString()}</span>
-                      <Badge variant="outline">{c.status}</Badge>
-                    </div>
-                    <p className="text-xs mt-2 break-words">{c.url}</p>
-                  </div>
-                ))}
-                {(crawls as any[]).length === 0 && (
-                  <p className="text-sm text-muted-foreground">No crawl activity yet.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-[var(--shadow-soft)]">
-            <CardHeader>
-              <CardTitle className="text-foreground">Performance Metrics (last {summary.windowDays} days)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Payments avg latency</span>
-                    <Badge variant="secondary">{summary.payments.avgMs} ms</Badge>
-                  </div>
-                  <div className="h-2 bg-muted rounded">
-                    <div className="h-2 bg-primary rounded" style={{ width: `${Math.min(100, summary.payments.avgMs)}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                    <span>count: {summary.payments.count}</span>
-                    <span>errors: {summary.payments.errors}</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Claims avg latency</span>
-                    <Badge variant="secondary">{summary.claims.avgMs} ms</Badge>
-                  </div>
-                  <div className="h-2 bg-muted rounded">
-                    <div className="h-2 bg-primary rounded" style={{ width: `${Math.min(100, summary.claims.avgMs)}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
-                    <span>count: {summary.claims.count}</span>
-                    <span>errors: {summary.claims.errors}</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>

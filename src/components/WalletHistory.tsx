@@ -10,8 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 
 const WalletHistory = () => {
   const { user, profile } = useAuth();
-  const payments = useQuery(api.payments.list, { user_id: user?.id } as any) || [];
-  const withdrawals = useQuery(api.withdrawals.list, { user_id: user?.id } as any) || [];
+  const payments = useQuery(api.functions.payments.list, { user_id: user?.id } as any) || [];
+  const withdrawals = useQuery(api.functions.withdrawals.list, { user_id: user?.id } as any) || [];
 
   const transactions = useMemo(() => {
     const t1 = payments.map((p) => ({

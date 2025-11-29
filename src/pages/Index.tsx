@@ -15,7 +15,7 @@ const Index = () => {
         <HeroSection />
         <UserDashboard />
         <InsurancePlans />
-        <ClaimsCenter />
+        <ClaimsCenter showRecent={false} />
         <AdminSnapshot />
         <SupportSection />
       </main>

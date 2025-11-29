@@ -17,10 +17,12 @@ import siteManifestUrl from '@/assets/site.webmanifest?url'
 const queryClient = new QueryClient()
 
 const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined
-const tunnel = (import.meta.env.VITE_R2_WORKER_URL as string | undefined)
-  ? (import.meta.env.VITE_R2_WORKER_URL as string).replace(/\/+$/, '') + '/tunnel'
+const isDev = import.meta.env.MODE === 'development'
+const workerUrl = import.meta.env.VITE_R2_WORKER_URL as string | undefined
+const tunnel = !isDev && workerUrl
+  ? workerUrl.replace(/\/+$/, '') + '/tunnel'
   : undefined
-if (typeof window !== 'undefined' && dsn) {
+if (typeof window !== 'undefined' && dsn && !isDev) {
   Sentry.init({
     dsn,
     integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
