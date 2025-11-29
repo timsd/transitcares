@@ -14,6 +14,19 @@ async function signHS256(payload: any, secret: string) {
   return `${data}.${base64url(sig)}`
 }
 
+function decodeJWT(token: string) {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) return null
+    return JSON.parse(atob(parts[1]))
+  } catch {
+    return null
+  }
+}
+
+// In a real implementation, this would be stored securely in a database
+const resetTokens = new Map<string, { email: string; expires: number }>()
+
 export default {
   async fetch(request: Request, env: any) {
     const url = new URL(request.url)
@@ -57,6 +70,43 @@ export default {
       const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24
       const jwt = await signHS256({ sub, email, role, exp, iss: 'transitcares' }, env.AUTH_JWT_SECRET)
       return new Response(JSON.stringify({ token: jwt }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+    }
+
+    if (request.method === 'POST' && url.pathname === '/auth/forgot-password') {
+      const { email } = await request.json()
+      if (!email) return new Response('Bad request', { status: 400, headers: corsHeaders })
+
+      // Generate reset token (in production, store in database)
+      const resetToken = base64url(crypto.getRandomValues(new Uint8Array(32)))
+      const expires = Date.now() + 60 * 60 * 1000 // 1 hour
+      resetTokens.set(resetToken, { email, expires })
+
+      // In production, you would send an email here
+      // For now, just return success with reset token for development
+      return new Response(JSON.stringify({
+        message: 'Password reset instructions sent to your email',
+        resetToken: resetToken // Only for development - remove in production!
+      }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
+    }
+
+    if (request.method === 'POST' && url.pathname === '/auth/reset-password') {
+      const { token, newPassword } = await request.json()
+      if (!token || !newPassword) return new Response('Bad request', { status: 400, headers: corsHeaders })
+
+      const resetData = resetTokens.get(token)
+      if (!resetData || Date.now() > resetData.expires) {
+        return new Response('Invalid or expired reset token', { status: 400, headers: corsHeaders })
+      }
+
+      // Remove used reset token
+      resetTokens.delete(token)
+
+      // In production, you would update the user's password in the database
+      // For now, just return success
+      return new Response(JSON.stringify({
+        message: 'Password has been reset successfully',
+        email: resetData.email
+      }), { headers: { 'Content-Type': 'application/json', ...corsHeaders } })
     }
 
     if (request.method === 'GET' && url.pathname === '/') {

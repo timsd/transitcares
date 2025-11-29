@@ -26,3 +26,7 @@
 [[scheduled]]
   path = "/.netlify/functions/metrics-summary"
   schedule = "0 9 * * 1"
+
+[[scheduled]]
+  path = "/.netlify/functions/daily-payments"
+  schedule = "0 2 * * *"

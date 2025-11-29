@@ -16,6 +16,20 @@ export default defineSchema({
     vehicle_photo_key: v.optional(v.string()),
     payment_days: v.optional(v.array(v.string())),
     auto_payment_enabled: v.optional(v.boolean()),
+    last_payment_date: v.optional(v.string()),
+    current_week_eligible: v.optional(v.boolean()),
+  }).index("by_user", ["user_id"]),
+  weekly_payments: defineTable({
+    user_id: v.string(),
+    week_start: v.string(),
+    week_end: v.string(),
+    total_amount: v.number(),
+    payment_count: v.number(),
+    plan_tier: v.string(),
+    payment_status: v.string(), // 'pending', 'partial', 'paid', 'unpaid'
+    payment_dates: v.optional(v.array(v.string())),
+    created_at: v.string(),
+    updated_at: v.string(),
   }).index("by_user", ["user_id"]),
   claims: defineTable({
     user_id: v.string(),

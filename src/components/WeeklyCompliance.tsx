@@ -13,22 +13,23 @@ import { useEffect, useMemo, useState } from "react";
 
 const WeeklyCompliance = () => {
   const { user, profile } = useAuth();
-  const paymentsList = useQuery(api.payments.list, { user_id: user?.id } as any) || [];
+  const weeklyPaymentStatus = useQuery(api.weeklyPayments.getWeeklyPaymentStatus, {
+    user_id: user?.id || ''
+  });
   const [selectedDays, setSelectedDays] = useState<string[]>([]);
   const [autoPay, setAutoPay] = useState<boolean>(false);
-  const [payments, setPayments] = useState<any[]>([]);
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   const getPlanAmount = (tier: string | null | undefined) => {
     switch(tier?.toLowerCase()) {
-      case 'bronze': return 200;
-      case 'silver': return 350;
-      case 'gold': return 500;
-      default: return 200;
+      case 'bronze': return 6000; // 4 days × ₦1,500
+      case 'silver': return 10000; // 4 days × ₦2,500
+      case 'gold': return 16000; // 4 days × ₦4,000
+      default: return 6000;
     }
   };
 
-  const dailyPremium = getPlanAmount(profile?.plan_tier);
+  const weeklyAmount = getPlanAmount(profile?.plan_tier);
   const registrationFee = 5000;
 
   useEffect(() => {
@@ -121,7 +122,7 @@ const WeeklyCompliance = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-3">
-          <p className="text-sm text-muted-foreground">Select up to 4 payment days</p>
+          <p className="text-sm text-muted-foreground">Select any 4 days per week</p>
           <div className="flex flex-wrap gap-3">
             {daysOfWeek.map((day) => (
               <label key={day} className="flex items-center gap-2">

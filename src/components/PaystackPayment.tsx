@@ -8,7 +8,7 @@ import { api } from '../../convex/_generated/api';
 
 interface PaystackPaymentProps {
   amount: number;
-  paymentType: 'topup' | 'daily_premium' | 'registration';
+  paymentType: 'topup' | 'daily_premium' | 'weekly_premium' | 'registration';
   onSuccess?: () => void;
   onClose?: () => void;
   children?: React.ReactNode;

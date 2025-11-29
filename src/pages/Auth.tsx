@@ -17,6 +17,8 @@ const authSchema = z.object({
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -35,15 +37,46 @@ const Auth = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const message = await authClient.requestPasswordReset(resetEmail);
+      toast({
+        title: "Password Reset Sent",
+        description: message,
+      });
+      setShowForgotPassword(false);
+      setResetEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send password reset",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const validationData = isLogin 
+      const validationData = isLogin
         ? { email: formData.email, password: formData.password }
         : formData;
-      
+
       authSchema.parse(validationData);
 
       if (isLogin) {
@@ -87,6 +120,51 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-transport-blue to-transport-green flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-primary">
+              Forgot Password
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Enter your email address and we'll send you instructions to reset your password
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleForgotPassword}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="resetEmail" className="text-foreground">Email Address</Label>
+                <Input
+                  id="resetEmail"
+                  type="email"
+                  placeholder="Enter your email address"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  className="border-input bg-background text-foreground"
+                />
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Sending..." : "Send Reset Instructions"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(false)}
+                className="text-primary font-medium hover:underline text-sm"
+              >
+                Back to Login
+              </button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-transport-blue to-transport-green flex items-center justify-center p-4">
@@ -150,6 +228,15 @@ const Auth = () => {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Loading..." : isLogin ? "Sign In" : "Sign Up"}
             </Button>
+            {isLogin && (
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-primary font-medium hover:underline text-sm"
+              >
+                Forgot your password?
+              </button>
+            )}
             <p className="text-center text-sm text-muted-foreground">
               {isLogin ? "Don't have an account?" : "Already have an account?"}{" "}
               <button

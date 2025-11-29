@@ -63,6 +63,30 @@ export const authClient = {
     if (id) localStorage.setItem('profile:' + id, JSON.stringify({ user_id: id, full_name }))
     setToken(data.token)
   },
+  async requestPasswordReset(email: string) {
+    const base = (import.meta.env.VITE_R2_WORKER_URL as string || '')
+    const url = base.replace(/\/+$/, '') + '/auth/forgot-password'
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    if (!res.ok) throw new Error('Password reset request failed')
+    const data = await res.json()
+    return data.message
+  },
+  async resetPassword(token: string, newPassword: string) {
+    const base = (import.meta.env.VITE_R2_WORKER_URL as string || '')
+    const url = base.replace(/\/+$/, '') + '/auth/reset-password'
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, newPassword }),
+    })
+    if (!res.ok) throw new Error('Password reset failed')
+    const data = await res.json()
+    return data.message
+  },
   async signOut() {
     setToken(null)
   },
