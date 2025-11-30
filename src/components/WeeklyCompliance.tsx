@@ -22,10 +22,10 @@ const WeeklyCompliance = () => {
 
   const getPlanAmount = (tier: string | null | undefined) => {
     switch(tier?.toLowerCase()) {
-      case 'bronze': return 200;
-      case 'silver': return 350;
-      case 'gold': return 500;
-      default: return 200;
+      case 'bronze': return 6000; // 4 days × ₦1,500
+      case 'silver': return 10000; // 4 days × ₦2,500
+      case 'gold': return 16000; // 4 days × ₦4,000
+      default: return 6000;
     }
   };
 

@@ -96,7 +96,13 @@ const Profile = () => {
         } catch {}
       }
 
-      const payload = { ...formData, user_id: user.id, vehicle_photo_key, registration_status: 'completed' }
+      const payload = { 
+        ...formData, 
+        user_id: user.id, 
+        vehicle_photo_key, 
+        registration_status: 'completed',
+        plan_tier: formData.plan_tier as 'bronze' | 'silver' | 'gold',
+      }
 
       try {
         await saveProfile({ data: payload })
