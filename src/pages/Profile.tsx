@@ -99,7 +99,7 @@ const Profile = () => {
       const payload = { ...formData, user_id: user.id, vehicle_photo_key, registration_status: 'completed' }
 
       try {
-        await saveProfile(payload)
+        await saveProfile({ data: payload })
       } catch (e: any) {
         throw new Error(e?.message || 'Server validation failed')
       }
