@@ -14,8 +14,8 @@ const ProfileSchema = z.object({
   vehicle_photo_key: z.string().nullable().optional(),
 })
 
-export const saveProfile = createServerFn('POST', async (payload: unknown) => {
-  const parsed = ProfileSchema.parse(payload)
-  return { ok: true, data: parsed }
-})
-
+export const saveProfile = createServerFn({ method: 'POST' })
+  .inputValidator(ProfileSchema)
+  .handler(async ({ data }) => {
+    return { ok: true, data }
+  })
