@@ -1,11 +1,13 @@
-name = "transitcares"
+name = "transitcares-auth"
 main = "workers/auth-jwt.ts"
-compatibility_date = "2024-09-01"
+compatibility_date = "2025-11-30"
 
 [vars]
-ALLOWED_ORIGIN = "*"
-ADMIN_EMAILS = "getfunedu@gmail.com"
+ALLOWED_ORIGIN = "http://localhost:5173"
 
-[[r2_buckets]]
-binding = "R2_BUCKET"
-bucket_name = "ajo-safe-ride-uploads"
+[observability]
+enabled = true
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
