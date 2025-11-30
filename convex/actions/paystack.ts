@@ -1,5 +1,6 @@
 "use node"
 import { action } from "../_generated/server"
+import { api } from "../_generated/api"
 import { v } from "convex/values"
 
 export const verifyAndRecord = action({
@@ -15,17 +16,18 @@ export const verifyAndRecord = action({
         const res = await fetch(`https://api.paystack.co/transaction/verify/${encodeURIComponent(args.reference)}`, { headers: { Authorization: `Bearer ${key}` } })
         const body = await res.json().catch(() => ({}))
         verified = Boolean(body?.data?.status === 'success')
-      } catch {}
+      } catch (e) {
+        verified = false
+      }
     }
-    await ctx.runMutation("payments:record", {
+    await ctx.runMutation(api.functions.payments.record, {
       user_id: args.user_id,
       amount: args.amount,
       payment_type: args.payment_type,
       plan_tier: args.plan_tier,
       reference: args.reference,
       payment_status: verified ? 'verified' : 'pending',
-    } as any)
+    })
     return { status: verified ? 'verified' : 'pending' }
   },
 })
-
