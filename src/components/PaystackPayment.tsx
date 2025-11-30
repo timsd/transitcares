@@ -3,7 +3,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useMutation, useAction } from 'convex/react';
 import * as Sentry from '@sentry/react';
-const startTransaction = (Sentry as any).startTransaction?.bind(Sentry) || (() => ({ finish() {} }))
 import { api } from '../../convex/_generated/api';
 
 interface PaystackPaymentProps {
@@ -36,7 +35,7 @@ const PaystackPayment = ({
     }
   }, [])
   const recordPayment = useMutation(api.functions.payments.record);
-  const verifyAndRecord = useAction(api.actions.paystack.verifyAndRecord);
+  const verifyAndRecord = useAction((api as any).actions.paystack.verifyAndRecord);
   
   const publicKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY as string || "";
   
@@ -57,7 +56,7 @@ const PaystackPayment = ({
     publicKey,
     text: children ? '' : "Pay Now",
     onSuccess: async (reference: any) => {
-      const tx = startTransaction({ name: 'payment:onSuccess', op: 'payment', data: { paymentType } })
+      await Sentry.startSpan({ name: 'payment:onSuccess', op: 'payment', attributes: { paymentType } }, async () => {
       try {
         let ref = reference?.reference || reference?.trxref || ''
         if (user) {
@@ -100,7 +99,7 @@ const PaystackPayment = ({
         if (onSuccess) onSuccess();
       } catch (error) {
         try {
-          const base = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
+          const base = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/\/+$/, '')
           if (base) {
             await fetch(base + '/sentry/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Payment verification failed', level: 'error', extra: { reference, paymentType } }) })
           }
@@ -109,7 +108,7 @@ const PaystackPayment = ({
         toast.error('Payment verification failed', {
           description: 'Please contact support if amount was deducted.'
         });
-      } finally { tx.finish() }
+      } })
     },
     onClose: () => {
       toast.info('Payment cancelled');

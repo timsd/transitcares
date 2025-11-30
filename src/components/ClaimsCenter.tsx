@@ -17,7 +17,6 @@ import { toast } from "sonner";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import * as Sentry from '@sentry/react';
-const startTransaction = (Sentry as any).startTransaction?.bind(Sentry) || (() => ({ finish() {} }))
 
 const ClaimsCenter = ({ showRecent = true }: { showRecent?: boolean }) => {
   const { user, profile } = useAuth();
@@ -173,23 +172,24 @@ const ClaimsCenter = ({ showRecent = true }: { showRecent?: boolean }) => {
                   })
                   return
                 }
-                const tx = startTransaction({ name: 'claims:create', op: 'http' })
-                try {
-                  await createClaim({
-                    user_id: user.id,
-                    claim_type: 'Repair',
-                    claim_amount: 0,
-                    description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
-                  } as any)
-                } catch (e) {
+                await Sentry.startSpan({ name: 'claims:create', op: 'http' }, async () => {
                   try {
-                    const base = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
-                    if (base) {
-                      await fetch(base + '/sentry/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Claim creation failed', level: 'error', extra: { error: String(e) } }) })
-                    }
-                  } catch {}
-                  Sentry.captureException(e)
-                } finally { tx.finish() }
+                    await createClaim({
+                      user_id: user.id,
+                      claim_type: 'Repair',
+                      claim_amount: 0,
+                      description: uploadedKey ? `Invoice: ${uploadedKey}` : 'Submitted claim pending admin review',
+                    } as any)
+                  } catch (e) {
+                    try {
+                      const base = (import.meta.env.VITE_R2_WORKER_URL as string || '').replace(/\/+$/, '')
+                      if (base) {
+                        await fetch(base + '/sentry/capture', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'Claim creation failed', level: 'error', extra: { error: String(e) } }) })
+                      }
+                    } catch {}
+                    Sentry.captureException(e)
+                  }
+                })
               }}>
                 Submit Claim
               </Button>

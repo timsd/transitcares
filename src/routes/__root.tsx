@@ -10,8 +10,7 @@ import { convexClient } from '@/integrations/convex/client'
 import * as Sentry from '@sentry/react'
 import '@/index.css'
 import appleTouchIcon from '@/assets/apple-touch-icon.png?url'
-import favicon32 from '@/assets/favicon-32x32.png?url'
-import favicon16 from '@/assets/favicon-16x16.png?url'
+import faviconIco from '@/assets/favicon.ico?url'
 import siteManifestUrl from '@/assets/site.webmanifest?url'
 
 const queryClient = new QueryClient()
@@ -57,8 +56,7 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: 'apple-touch-icon', href: appleTouchIcon },
-      { rel: 'icon', type: 'image/png', sizes: '32x32', href: favicon32 },
-      { rel: 'icon', type: 'image/png', sizes: '16x16', href: favicon16 },
+      { rel: 'icon', href: faviconIco },
       { rel: 'manifest', href: siteManifestUrl },
     ],
   }),
