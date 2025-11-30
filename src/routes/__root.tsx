@@ -70,7 +70,11 @@ function RootComponent() {
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <Sentry.ErrorBoundary>
+          <Sentry.ErrorBoundary fallback={<div style={{ padding: 24 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600 }}>Something went wrong</h2>
+            <p style={{ marginTop: 8 }}>Please refresh the page. If the issue persists, contact support.</p>
+            <button onClick={() => window.location.reload()} style={{ marginTop: 12, padding: '8px 12px', borderRadius: 6, background: 'var(--primary)', color: 'var(--primary-foreground)' }}>Reload</button>
+          </div>}>
             {convexClient ? (
               <ConvexProvider client={convexClient}>
                 <Outlet />
