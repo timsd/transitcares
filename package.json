@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node -e \"const fs=require('fs'),p=require('path');const src=['_redirects','_headers'];for(const f of src){const from=p.join('dist','client',f);const to=p.join('dist',f);if(fs.existsSync(from)){fs.copyFileSync(from,to);}}\"",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
