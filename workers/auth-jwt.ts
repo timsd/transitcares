@@ -1,6 +1,6 @@
 function base64url(input: ArrayBuffer | string) {
   const bytes = typeof input === 'string' ? new TextEncoder().encode(input) : new Uint8Array(input)
-  let str = btoa(String.fromCharCode(...bytes))
+  const str = btoa(String.fromCharCode(...bytes))
   return str.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
 }
 
@@ -14,15 +14,7 @@ async function signHS256(payload: any, secret: string) {
   return `${data}.${base64url(sig)}`
 }
 
-function decodeJWT(token: string) {
-  try {
-    const parts = token.split('.')
-    if (parts.length !== 3) return null
-    return JSON.parse(atob(parts[1]))
-  } catch {
-    return null
-  }
-}
+
 
 // In a real implementation, this would be stored securely in a database
 const resetTokens = new Map<string, { email: string; expires: number }>()
@@ -31,12 +23,16 @@ export default {
   async fetch(request: Request, env: any) {
     const url = new URL(request.url)
     const origin = request.headers.get('Origin') || '*'
-    const allowedOrigin = (env.ALLOWED_ORIGIN as string) || origin
+    const allowListRaw = (env.ALLOWED_ORIGINS || env.ALLOWED_ORIGIN || '').toString()
+    const allowList = allowListRaw.split(',').map((o: string) => o.trim()).filter(Boolean)
+    const allowedOrigin = allowList.length ? (allowList.includes(origin) ? origin : allowList[0]) : origin
 
     const corsHeaders = {
       'Access-Control-Allow-Origin': allowedOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
     }
 
     if (request.method === 'OPTIONS') {
@@ -63,7 +59,7 @@ export default {
     }
 
     if (request.method === 'POST' && url.pathname === '/auth/signup') {
-      const { email, password, full_name } = await request.json()
+      const { email, password } = await request.json()
       if (!email || !password) return new Response('Bad request', { status: 400, headers: corsHeaders })
       const sub = btoa(email).slice(0, 12)
       const role = 'user'
@@ -135,7 +131,7 @@ export default {
         if (!dsn) {
           return new Response(JSON.stringify({ status: 'noop' }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } })
         }
-        const m = dsn.match(/^https:\/\/([^@]+)@[^\/]+\/(\d+)/)
+        const m = dsn.match(/^https:\/\/([^@]+)@[^/]+\/(\d+)/)
         const key = m?.[1]
         const project = m?.[2]
         if (!key || !project) {
@@ -164,15 +160,15 @@ export default {
       try {
         const dsn = env.SENTRY_DSN as string | undefined
         if (!dsn) return new Response('Missing DSN', { status: 200, headers: corsHeaders })
-        const m = dsn.match(/^https:\/\/([^@]+)@[^\/]+\/(\d+)/)
+        const m = dsn.match(/^https:\/\/([^@]+)@[^/]+\/(\d+)/)
         const key = m?.[1]
         const project = m?.[2]
         if (!key || !project) return new Response('Invalid DSN', { status: 400, headers: corsHeaders })
         const endpoint = `https://sentry.io/api/${project}/envelope/?sentry_key=${key}&sentry_version=7`
         const body = await request.arrayBuffer()
         const resp = await fetch(endpoint, { method: 'POST', body })
-        return new Response(resp.body, { status: resp.status, headers: { 'Access-Control-Allow-Origin': allowedOrigin } })
-      } catch (e: any) {
+        return new Response(resp.body, { status: resp.status, headers: { 'Access-Control-Allow-Origin': allowedOrigin, 'Access-Control-Allow-Credentials': 'true' } })
+      } catch {
         return new Response('Tunnel error', { status: 500, headers: corsHeaders })
       }
     }

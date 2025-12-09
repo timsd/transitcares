@@ -26,9 +26,10 @@ const UserDashboard = () => {
   const [dailyPremium, setDailyPremium] = useState<number | null>(null);
 
   // Get payment status and penalties
-  const paymentStatus = useQuery(api.dailyPayments.getDailyPaymentStatus, {
-    user_id: user?.id || ''
-  });
+  const paymentStatus = useQuery(
+    api.dailyPayments.getDailyPaymentStatus,
+    user ? { user_id: user.id } : undefined
+  );
 
   // Initialize device fingerprinting
   useDeviceFingerprint(user?.id);

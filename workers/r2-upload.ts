@@ -20,11 +20,15 @@ export default {
   async fetch(request: Request, env: any) {
     const url = new URL(request.url)
     const origin = request.headers.get('Origin') || '*'
-    const allowedOrigin = (env.ALLOWED_ORIGIN as string) || origin
+    const allowListRaw = (env.ALLOWED_ORIGINS || env.ALLOWED_ORIGIN || '').toString()
+    const allowList = allowListRaw.split(',').map((o: string) => o.trim()).filter(Boolean)
+    const allowedOrigin = allowList.length ? (allowList.includes(origin) ? origin : allowList[0]) : origin
     const corsHeaders = {
       'Access-Control-Allow-Origin': allowedOrigin,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
     }
 
     if (request.method === 'OPTIONS') {
