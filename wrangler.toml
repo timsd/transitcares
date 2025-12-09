@@ -1,4 +1,4 @@
-name = "transitcares-auth"
+name = "transitcares"
 main = "workers/auth-jwt.ts"
 compatibility_date = "2025-11-30"
 
